@@ -60,7 +60,27 @@ Or on Windows you can use:
 .\start_backend.bat
 ```
 
-### 2. Start the frontend
+### 2. Important: expose the backend with ngrok for live voice calls
+
+**This step is required when using live Hunar calls.** Hunar needs to send call status, recordings, and screening answers back to this backend. It cannot reach `http://localhost:8000` on your computer.
+
+Keep the backend running, then open a new terminal and run:
+
+```powershell
+ngrok http 8000
+```
+
+Copy the public HTTPS forwarding URL that ngrok shows, for example `https://example-1234.ngrok-free.app`, and set it in `backend/.env`:
+
+```env
+PUBLIC_WEBHOOK_URL=https://example-1234.ngrok-free.app
+```
+
+Restart the backend after changing `.env`. Before triggering a real call, make sure the value does not contain `/api` or a trailing slash. The app uses this base URL to build the Hunar webhook callback URL.
+
+On ngrok's free plan, the URL can change every time ngrok restarts. If it changes, update `PUBLIC_WEBHOOK_URL` and restart the backend again. You can skip ngrok only when using simulated calls or when the backend is already deployed at a public HTTPS URL.
+
+### 3. Start the frontend
 
 In a second terminal:
 
