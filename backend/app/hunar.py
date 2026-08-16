@@ -149,8 +149,11 @@ def create_hunar_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
         "Content-Type": "application/json"
     }
     
+    # Avoid sending unset optional controls as JSON null; Hunar validates agent
+    # payloads strictly, while the UI can leave any guardrail unset.
+    clean_payload = {key: value for key, value in payload.items() if value is not None}
     try:
-        response = requests.post(f"{BASE_URL}/agents/", headers=headers, json=payload, timeout=15)
+        response = requests.post(f"{BASE_URL}/agents/", headers=headers, json=clean_payload, timeout=15)
         if response.status_code in (200, 201):
             return response.json()
         print(f"Create Hunar agent failed. Status={response.status_code} Text={response.text}")

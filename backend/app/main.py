@@ -1,6 +1,7 @@
 import os
 import uuid
 import time
+from datetime import datetime, timezone
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, Header
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
@@ -11,7 +12,7 @@ from pathlib import Path
 env_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path=env_path, override=True)
 
-from app.schemas import JobCreate, SourcingSearchQuery, CandidateCreate, CandidateUpdate, CallTrigger, BulkCallTrigger, AgentCreate, AgentUpdate
+from app.schemas import JobCreate, SourcingSearchQuery, CandidateCreate, CandidateUpdate, CandidateFeedbackCreate, BulkCandidateUpdate, CallTrigger, BulkCallTrigger, AgentCreate, AgentUpdate
 from app import db, ai, apollo, hunar
 
 app = FastAPI(title="AI Hiring Platform & Reachout Assistant")
@@ -249,6 +250,16 @@ def auto_search_and_add(job_id: str, auto_add: bool = False, pipeline_limit: Opt
                 "skills": cand.get("skills", []),
                 "call_id": None,
                 "call_status": "NOT_STARTED",
+                "stage": "SOURCED",
+                "stage_changed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "recruiter_notes": "",
+                "follow_up_at": None,
+                "follow_up_status": "NOT_SCHEDULED",
+                "interview_feedback": [],
+                "offer": {"status": "NOT_STARTED"},
+                "consent_status": "CONTACT_ALLOWED",
+                "preferred_contact_time": "",
+                "outreach_log": [],
                 "recording_url": None,
                 "answers": {},
                 "evaluation": {},
@@ -285,6 +296,16 @@ def add_candidate(payload: CandidateCreate):
         "skills": payload.skills,
         "call_id": None,
         "call_status": "NOT_STARTED",
+        "stage": "SOURCED",
+        "stage_changed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "recruiter_notes": "",
+        "follow_up_at": None,
+        "follow_up_status": "NOT_SCHEDULED",
+        "interview_feedback": [],
+        "offer": {"status": "NOT_STARTED"},
+        "consent_status": "CONTACT_ALLOWED",
+        "preferred_contact_time": "",
+        "outreach_log": [],
         "recording_url": None,
         "answers": {},
         "evaluation": {},
@@ -297,6 +318,119 @@ def add_candidate(payload: CandidateCreate):
 @app.get("/api/candidates")
 def list_candidates(job_id: Optional[str] = None):
     return db.list_candidates(job_id)
+
+
+@app.get("/api/jobs/{job_id}/analytics")
+def job_analytics(job_id: str):
+    if not db.get_job(job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    candidates = db.list_candidates(job_id)
+    now = datetime.now().strftime("%Y-%m-%dT%H:%M")
+    evaluated = [candidate for candidate in candidates if candidate.get("evaluation", {}).get("overall_score") is not None]
+    advanced = [candidate for candidate in evaluated if candidate.get("evaluation", {}).get("decision") == "ADVANCE"]
+    overdue = [candidate for candidate in candidates if candidate.get("follow_up_at") and candidate["follow_up_at"][:16] < now and candidate.get("follow_up_status") != "COMPLETED"]
+    stage_counts = {}
+    stage_ages = []
+    decline_reasons = {}
+    for candidate in candidates:
+        stage = candidate.get("stage", "SOURCED")
+        stage_counts[stage] = stage_counts.get(stage, 0) + 1
+        try:
+            changed_at = datetime.fromisoformat(candidate.get("stage_changed_at", candidate.get("created_at", "")).replace("Z", "+00:00"))
+            stage_ages.append((datetime.now(timezone.utc) - changed_at).total_seconds() / 3600)
+        except (TypeError, ValueError):
+            pass
+        if candidate.get("evaluation", {}).get("decision") == "DECLINE":
+            reasons = candidate.get("evaluation", {}).get("risks", []) or ["Does not meet screening criteria"]
+            reason = str(reasons[0])
+            decline_reasons[reason] = decline_reasons.get(reason, 0) + 1
+    return {
+        "total_candidates": len(candidates),
+        "calls_completed": sum(candidate.get("call_status") == "COMPLETED" for candidate in candidates),
+        "call_completion_rate": round((sum(candidate.get("call_status") == "COMPLETED" for candidate in candidates) / len(candidates)) * 100) if candidates else 0,
+        "evaluated": len(evaluated),
+        "shortlisted": len(advanced),
+        "shortlist_rate": round((len(advanced) / len(evaluated)) * 100) if evaluated else 0,
+        "stage_counts": stage_counts,
+        "average_stage_age_hours": round(sum(stage_ages) / len(stage_ages), 1) if stage_ages else 0,
+        "decline_reasons": decline_reasons,
+        "overdue_follow_ups": overdue,
+    }
+
+
+@app.patch("/api/candidates/bulk-update")
+def bulk_update_candidates(payload: BulkCandidateUpdate):
+    """Apply one recruiter workflow action to several candidates at once."""
+    updated = []
+    changes = payload.dict(exclude_none=True, exclude={"candidate_ids"})
+    for candidate_id in payload.candidate_ids:
+        candidate = db.get_candidate(candidate_id)
+        if not candidate:
+            continue
+        candidate.update(changes)
+        if payload.stage is not None:
+            candidate["stage_changed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        db.save_candidate(candidate)
+        updated.append(candidate_id)
+    return {"updated": updated, "count": len(updated)}
+
+
+@app.post("/api/candidates/{candidate_id}/feedback")
+def add_interview_feedback(candidate_id: str, payload: CandidateFeedbackCreate):
+    candidate = db.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    feedback = candidate.setdefault("interview_feedback", [])
+    feedback.append({
+        **payload.dict(exclude_none=True),
+        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    })
+    if candidate.get("stage") in ("SHORTLISTED", "INTERVIEW", "INTERVIEW_SCHEDULED"):
+        candidate["stage"] = "INTERVIEW_FEEDBACK"
+    db.save_candidate(candidate)
+    return candidate
+
+
+@app.get("/api/candidates/{candidate_id}/handoff")
+def candidate_handoff(candidate_id: str):
+    """A compact, shareable packet for a hiring-manager review."""
+    candidate = db.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    job = db.get_job(candidate["job_id"])
+    return {
+        "job": {"title": job.get("title"), "requirements": job.get("requirements", {})} if job else None,
+        "candidate": candidate,
+        "prepared_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    }
+
+
+@app.post("/api/candidates/{candidate_id}/outreach")
+async def prepare_candidate_outreach(candidate_id: str, request: Request):
+    """Prepare and record a recruiter-approved outreach template; this endpoint never sends messages itself."""
+    candidate = db.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    if candidate.get("consent_status") == "DO_NOT_CONTACT":
+        raise HTTPException(status_code=409, detail="This candidate has opted out of contact")
+    body = await request.json()
+    message_type = body.get("type", "INTERVIEW_INVITE")
+    job = db.get_job(candidate["job_id"]) or {}
+    title = job.get("title", "this role")
+    templates = {
+        "INTERVIEW_INVITE": f"Hi {candidate['name']}, thank you for speaking with us about the {title} role. We would like to invite you to the next interview. Please share a few convenient time slots.",
+        "FOLLOW_UP": f"Hi {candidate['name']}, following up on the {title} opportunity. Please let us know whether you would like to continue in the process.",
+        "ON_HOLD": f"Hi {candidate['name']}, thank you for your interest in the {title} role. Our team is finalizing the next steps and we will update you soon.",
+        "DECLINE": f"Hi {candidate['name']}, thank you for taking the time to speak with us about the {title} role. We have decided not to move forward at this time, and we appreciate your interest."
+    }
+    message = templates.get(message_type, templates["FOLLOW_UP"])
+    candidate.setdefault("outreach_log", []).append({
+        "type": message_type,
+        "message": message,
+        "prepared_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    })
+    db.save_candidate(candidate)
+    return {"message": message, "candidate": candidate}
 
 
 @app.delete("/api/candidates/{candidate_id}")
@@ -312,8 +446,12 @@ def update_candidate(candidate_id: str, payload: CandidateUpdate):
     candidate = db.get_candidate(candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
-    if payload.phone is not None:
-        candidate["phone"] = payload.phone
+    # Keep this deliberately constrained to the recruiter-controlled fields;
+    # call outcomes continue to be written only by Hunar webhooks.
+    for field, value in payload.dict(exclude_none=True).items():
+        candidate[field] = value
+    if payload.stage is not None:
+        candidate["stage_changed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     db.save_candidate(candidate)
     return candidate
 
@@ -351,7 +489,14 @@ def create_agent(payload: AgentCreate):
         "conclusion": payload.conclusion,
         "result_prompt": payload.result_prompt,
         "custom_variables": payload.custom_variables,
-        "result_schema": payload.result_schema
+        "result_schema": payload.result_schema,
+        "max_call_duration_seconds": payload.max_call_duration_seconds,
+        "max_retries": payload.max_retries,
+        "retry_delay_seconds": payload.retry_delay_seconds,
+        "timezone": payload.timezone,
+        "calling_hours_start": payload.calling_hours_start,
+        "calling_hours_end": payload.calling_hours_end,
+        "do_not_call_topics": payload.do_not_call_topics,
     }
     
     result = hunar.create_hunar_agent(agent_payload)
@@ -381,9 +526,38 @@ def get_suggested_agent_config(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     return job.get("agent_config", {})
 
+@app.post("/api/candidates/{candidate_id}/enrich")
+def enrich_candidate_endpoint(candidate_id: str):
+    candidate = db.get_candidate(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+        
+    res = apollo.enrich_candidate(
+        first_name=candidate.get("first_name", ""),
+        last_name=candidate.get("last_name", ""),
+        company=candidate.get("job_company_name", ""),
+        linkedin_url=candidate.get("linkedin_url", "")
+    )
+    
+    if res and (res.get("phone_numbers") or res.get("mobile_phone")):
+        phones = res.get("phone_numbers", [])
+        mobile = res.get("mobile_phone")
+        raw_phone = mobile if mobile else (phones[0] if phones else "")
+        if raw_phone:
+            # We found a real phone number
+            candidate["phone"] = raw_phone
+            if res.get("work_email"):
+                candidate["email"] = res.get("work_email")
+            db.save_candidate(candidate)
+            return {"success": True, "phone": raw_phone, "email": candidate.get("email")}
+            
+    # If no real phone number found, we can just throw an error or return false
+    return {"success": False, "message": "No contact information found"}
+
 
 # ─────────────────────────────────────────────────────────────
 # OUTBOUND CALLS — SINGLE
+
 # ─────────────────────────────────────────────────────────────
 
 @app.post("/api/candidates/reachout")
@@ -508,6 +682,11 @@ def _run_bulk_calls_task(candidates: List[dict], agent_id: str, job_requirements
 # WEBHOOKS
 # ─────────────────────────────────────────────────────────────
 
+@app.get("/api/webhooks/hunar")
+def hunar_webhook_health():
+    """Public tunnel check that exposes no credentials."""
+    return {"status": "ready", "webhook": "hunar"}
+
 @app.post("/api/webhooks/hunar")
 async def hunar_webhook(
     request: Request,
@@ -533,8 +712,19 @@ async def hunar_webhook(
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
         
-    event_type = payload.get("event_type")
-    call_id = payload.get("call_id")
+    # Hunar callback payloads can arrive either at the top level or wrapped in
+    # a `data` object, depending on the callback/event version. Normalise both
+    # forms before matching the result to the candidate that initiated the call.
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else payload
+    event_type = (
+        payload.get("event_type") or payload.get("event") or payload.get("type")
+        or data.get("event_type") or data.get("event") or data.get("type")
+    )
+    call_id = (
+        payload.get("call_id") or payload.get("call_uuid") or payload.get("callId")
+        or data.get("call_id") or data.get("call_uuid") or data.get("callId")
+    )
+    event_type = str(event_type or "").lower()
     
     print(f"Webhook received: event={event_type} call_id={call_id}")
     
@@ -548,22 +738,35 @@ async def hunar_webhook(
         
     job = db.get_job(candidate["job_id"])
     
-    if event_type == "call_status_updated":
-        candidate["call_status"] = payload.get("status", "COMPLETED")
-    elif event_type == "call_recording_done":
-        candidate["recording_url"] = payload.get("recording_url")
-    elif event_type == "call_result_done":
-        answers = payload.get("result", {})
+    status = data.get("status") or data.get("call_status") or payload.get("status")
+    recording_url = data.get("recording_url") or data.get("recording") or payload.get("recording_url")
+    answers = data.get("result") or data.get("call_result") or payload.get("result") or payload.get("call_result")
+
+    if event_type in ("call_status_updated", "call_status", "status_updated"):
+        candidate["call_status"] = status or "COMPLETED"
+    elif event_type in ("call_recording_done", "recording_done", "call_recording"):
+        candidate["recording_url"] = recording_url
+    elif event_type in ("call_result_done", "result_done", "call_result"):
+        answers = answers or {}
         candidate["answers"] = answers
         if job:
             candidate["evaluation"] = ai.evaluate_candidate_results(answers, job["requirements"])
-    elif event_type == "call_summary":
-        candidate["call_status"] = payload.get("status", "COMPLETED")
-        candidate["recording_url"] = payload.get("recording_url")
-        answers = payload.get("result", {})
+            if candidate.get("stage") in (None, "SOURCED", "SCREENED"):
+                candidate["stage"] = "SHORTLISTED" if candidate["evaluation"].get("decision") == "ADVANCE" else "SCREENED"
+                candidate["stage_changed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    elif event_type in ("call_summary", "summary", "call_completed", "completed"):
+        candidate["call_status"] = status or "COMPLETED"
+        candidate["recording_url"] = recording_url
+        answers = answers or {}
         candidate["answers"] = answers
         if job:
             candidate["evaluation"] = ai.evaluate_candidate_results(answers, job["requirements"])
+            if candidate.get("stage") in (None, "SOURCED", "SCREENED"):
+                candidate["stage"] = "SHORTLISTED" if candidate["evaluation"].get("decision") == "ADVANCE" else "SCREENED"
+                candidate["stage_changed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    elif status:
+        # Preserve terminal status even if Hunar introduces a new event label.
+        candidate["call_status"] = status
             
     db.save_candidate(candidate)
     return {"status": "processed", "event_type": event_type}
@@ -610,6 +813,9 @@ def run_simulated_call_sequence(candidate_id: str):
     candidate["answers"] = answers
     if job:
         candidate["evaluation"] = ai.evaluate_candidate_results(answers, job["requirements"])
+        if candidate.get("stage") in (None, "SOURCED", "SCREENED"):
+            candidate["stage"] = "SHORTLISTED" if candidate["evaluation"].get("decision") == "ADVANCE" else "SCREENED"
+            candidate["stage_changed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         
     db.save_candidate(candidate)
 

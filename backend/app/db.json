@@ -1,517 +1,34 @@
 {
   "jobs": {
-    "92fd4098-755e-4861-a8b3-97150dc5431e": {
-      "id": "92fd4098-755e-4861-a8b3-97150dc5431e",
-      "title": "Software engineer",
-      "description": "Python, FastAPI, SQL",
+    "66c1f753-46bc-41fe-9b98-8203f53b31a7": {
+      "id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "title": "machine learning engineer",
+      "description": "A Machine Learning (ML) Engineer designs, builds, and deploys artificial intelligence systems. They bridge the gap between data science prototypes and production-ready software, turning raw data into scalable, automated machine learning applications.",
       "requirements": {
-        "title": "Software Engineer",
+        "title": "Machine Learning (ML) Engineer",
         "skills": [
-          "Python",
-          "SQL",
-          "FastAPI"
-        ],
-        "experience_years": 2.0,
-        "location": "Bengaluru, India",
-        "education": "Bachelor's in Computer Science or equivalent",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "FastAPI, Git, and REST APIs"
-      },
-      "agent_config": {
-        "name": "Screening: Software engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software engineer. Qualify their experience, core technical skills (Python, SQL, FastAPI), notice period, and salary expectations.",
-        "introduction": "Hi! Am I speaking with {callee_name}? This is Seema calling from HR. I saw your profile and wanted to connect about the Software Engineer position. Do you have a few minutes?",
-        "result_schema": {
-          "experience": "float",
-          "notice_period": "integer",
-          "salary_expectation": "integer",
-          "interested": "boolean",
-          "python": "integer",
-          "sql": "integer",
-          "fastapi": "integer"
-        }
-      },
-      "created_at": "2026-08-16T01:40:57Z"
-    },
-    "a5f15198-996e-4e07-8796-8dc1ef2eff9c": {
-      "id": "a5f15198-996e-4e07-8796-8dc1ef2eff9c",
-      "title": "AI/ML engineer",
-      "description": "LLMOps, MLOps",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "SQL"
-        ],
-        "experience_years": 2.0,
-        "location": "Bengaluru, India",
-        "education": "Bachelor's in Computer Science or equivalent",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "FastAPI, Git, and REST APIs"
-      },
-      "agent_config": {
-        "name": "Screening: AI/ML engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of AI/ML engineer. Qualify their experience, core technical skills (Python, SQL), notice period, and salary expectations.",
-        "introduction": "Hi! Am I speaking with {callee_name}? This is Seema calling from HR. I saw your profile and wanted to connect about the Software Engineer position. Do you have a few minutes?",
-        "result_schema": {
-          "experience": "float",
-          "notice_period": "integer",
-          "salary_expectation": "integer",
-          "interested": "boolean",
-          "python": "integer",
-          "sql": "integer"
-        }
-      },
-      "created_at": "2026-08-16T01:42:03Z"
-    },
-    "58b864b4-726b-4d49-8d8d-ff6dc8d8040a": {
-      "id": "58b864b4-726b-4d49-8d8d-ff6dc8d8040a",
-      "title": "Machine Learning Engineer",
-      "description": "Pytorch, Tensorflow, Open CV",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "SQL"
-        ],
-        "experience_years": 2.0,
-        "location": "Bengaluru, India",
-        "education": "Bachelor's in Computer Science or equivalent",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "FastAPI, Git, and REST APIs"
-      },
-      "agent_config": {
-        "name": "Screening: Machine Learning Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Machine Learning Engineer. Qualify their experience, core technical skills (Python, SQL), notice period, and salary expectations.",
-        "introduction": "Hi! Am I speaking with {callee_name}? This is Seema calling from HR. I saw your profile and wanted to connect about the Software Engineer position. Do you have a few minutes?",
-        "result_schema": {
-          "experience": "float",
-          "notice_period": "integer",
-          "salary_expectation": "integer",
-          "interested": "boolean",
-          "python": "integer",
-          "sql": "integer"
-        }
-      },
-      "created_at": "2026-08-16T01:42:57Z"
-    },
-    "6c1d5a37-07d6-486b-ac64-f2d1d427ab59": {
-      "id": "6c1d5a37-07d6-486b-ac64-f2d1d427ab59",
-      "title": "UI/UX designer",
-      "description": "Figma, Adobe",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "SQL"
-        ],
-        "experience_years": 2.0,
-        "location": "Bengaluru, India",
-        "education": "Bachelor's in Computer Science or equivalent",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "FastAPI, Git, and REST APIs"
-      },
-      "agent_config": {
-        "name": "Screening: UI/UX designer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of UI/UX designer. Qualify their experience, core technical skills (Python, SQL), notice period, and salary expectations.",
-        "introduction": "Hi! Am I speaking with {callee_name}? This is Seema calling from HR. I saw your profile and wanted to connect about the Software Engineer position. Do you have a few minutes?",
-        "result_schema": {
-          "experience": "float",
-          "notice_period": "integer",
-          "salary_expectation": "integer",
-          "interested": "boolean",
-          "python": "integer",
-          "sql": "integer"
-        }
-      },
-      "created_at": "2026-08-16T01:59:32Z"
-    },
-    "a5f6017a-1c41-48ed-8e3b-9eb76bb0b836": {
-      "id": "a5f6017a-1c41-48ed-8e3b-9eb76bb0b836",
-      "title": "Business development executive",
-      "description": " by finding new clients, building strategic partnerships, and closing sales deals. A standard job description includes core duties like market research, lead generation, client communication, and contract negotiation, \nKey ResponsibilitiesFind new business leads through research, networking, and cold outreach.Build and keep good relationships with clients and partners.Make and give sales pitches, proposals, and project contracts.Negotiate deal terms to reach win-win outcomes.Work with marketing and product teams to match customer needs.Track all daily leads and sales steps in a CRM tool.Required SkillsClear and strong speaking and writing skills for client presentations.Good negotiation and problem-solving abilities.Basic market analysis and data tracking skills.High energy, resilience, and time management.QualificationsBachelor\u2019s degree in business, marketing, or a related field.2 to 5 years of proven experience in B2B sales, partnerships, or business growth.Familiarity with local markets and industry software or CRM tools.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Business development executive",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Business development executive. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! Am I speaking with {callee_name}? This is Seema calling from HR. I saw your profile and wanted to connect about the Software Engineer position. Do you have a few minutes?",
-        "result_schema": {
-          "experience": "float",
-          "notice_period": "integer",
-          "salary_expectation": "integer",
-          "interested": "boolean",
-          "python": "integer",
-          "javascript": "integer"
-        }
-      },
-      "created_at": "2026-08-16T02:51:29Z"
-    },
-    "d6f8b311-56f3-4997-b137-2d405baeef05": {
-      "id": "d6f8b311-56f3-4997-b137-2d405baeef05",
-      "title": "Senior Software Engineer",
-      "description": "We need a Python developer with 3+ years experience in backend development, REST APIs, and SQL databases.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Senior Software Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:22:18Z"
-    },
-    "0aabe7c9-04d2-4f49-9b66-91db8099f5c7": {
-      "id": "0aabe7c9-04d2-4f49-9b66-91db8099f5c7",
-      "title": "Test Job",
-      "description": "Python backend engineer needed.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Test Job",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:23:55Z"
-    },
-    "298cfb32-dca5-4af6-b64a-9cafe0908ac8": {
-      "id": "298cfb32-dca5-4af6-b64a-9cafe0908ac8",
-      "title": "Senior Software Engineer",
-      "description": "We need a Python developer with 3+ years experience in backend development, REST APIs, and SQL databases.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Senior Software Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:26:40Z"
-    },
-    "c8dc859f-4943-46b8-99e8-a995b52dc6ad": {
-      "id": "c8dc859f-4943-46b8-99e8-a995b52dc6ad",
-      "title": "Senior Software Engineer",
-      "description": "We need a Python backend developer with 3+ years experience in REST APIs and SQL databases.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Senior Software Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:28:15Z"
-    },
-    "58b3951e-4891-46ce-8fdd-33993c6e55c2": {
-      "id": "58b3951e-4891-46ce-8fdd-33993c6e55c2",
-      "title": "Backend Engineer",
-      "description": "Python developer needed with REST API experience.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Backend Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:30:02Z"
-    },
-    "42662137-43bc-4c4c-b44e-4d755ceb252a": {
-      "id": "42662137-43bc-4c4c-b44e-4d755ceb252a",
-      "title": "Backend Engineer",
-      "description": "Python developer needed with REST API and SQL experience for backend systems.",
-      "requirements": {
-        "title": "Software Engineer",
-        "skills": [
-          "Python",
-          "JavaScript"
-        ],
-        "experience_years": 2.0,
-        "location": "Remote",
-        "education": "B.Tech/B.E",
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Not specified"
-      },
-      "agent_config": {
-        "name": "Screening: Backend Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Software Engineer. Qualify their experience, core technical skills (Python, JavaScript), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Software Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Software Engineer role that requires Python, JavaScript. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:32:43Z"
-    },
-    "04895b3c-d958-4ba8-9eaf-ffedf03b76ed": {
-      "id": "04895b3c-d958-4ba8-9eaf-ffedf03b76ed",
-      "title": "Python Backend Engineer",
-      "description": "We need a senior Python backend developer with 3+ years experience in REST APIs, SQL databases, FastAPI, and Docker for our backend systems.",
-      "requirements": {
-        "title": "senior Python backend developer",
-        "skills": [
-          "Python",
-          "REST APIs",
-          "SQL databases",
-          "FastAPI",
-          "Docker"
-        ],
-        "experience_years": 3.0,
-        "location": "Not specified",
-        "education": "Not specified",
-        "target_salary": "Not specified",
-        "notice_period_days": 30,
-        "technical_requirements": "Backend systems development using Python, REST APIs, SQL databases, FastAPI, and Docker."
-      },
-      "agent_config": {
-        "name": "Screening: Python Backend Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of senior Python backend developer. Qualify their experience, core technical skills (Python, REST APIs, SQL databases, FastAPI, Docker), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a senior Python backend developer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a senior Python backend developer role that requires Python, REST APIs, SQL databases, FastAPI, Docker. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:38:31Z"
-    },
-    "be3b5feb-d924-47ba-80bc-9a47386bf322": {
-      "id": "be3b5feb-d924-47ba-80bc-9a47386bf322",
-      "title": "Test Job 2",
-      "description": "Python developer needed.",
-      "requirements": {
-        "title": "Python Developer",
-        "skills": [
-          "Python"
+          "ML System Design",
+          "AI System Development",
+          "Deployment",
+          "Bridging Data Science to Production",
+          "Scalable Machine Learning Applications",
+          "Automated Machine Learning"
         ],
         "experience_years": 0.0,
-        "location": null,
-        "education": null,
-        "target_salary": null,
+        "location": "",
+        "education": "",
+        "target_salary": "competitive",
         "notice_period_days": 30,
-        "technical_requirements": "Python"
+        "technical_requirements": "Artificial Intelligence systems, Data science prototypes, Production-ready software, Scalable and automated machine learning applications"
       },
       "agent_config": {
-        "name": "Screening: Test Job 2",
+        "name": "Screening: machine learning engineer",
         "language": "ENGLISH",
         "voice_persona": "NEHA",
         "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Python Developer. Qualify their experience, core technical skills (Python), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Python Developer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Python Developer role that requires Python. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
+        "objective": "Screen candidates for the position of Machine Learning (ML) Engineer. Qualify their experience, core technical skills (ML System Design, AI System Development, Deployment, Bridging Data Science to Production, Scalable Machine Learning Applications, Automated Machine Learning), notice period, and salary expectations.",
+        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Machine Learning (ML) Engineer opportunity. Is now a good time to chat?",
+        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Machine Learning (ML) Engineer role that requires ML System Design, AI System Development, Deployment, Bridging Data Science to Production, Scalable Machine Learning Applications, Automated Machine Learning. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
         "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
         "silence_response": "Are you there?",
         "conclusion": "Thank you for your time! Have a wonderful day.",
@@ -529,466 +46,375 @@
           "summary": ""
         }
       },
-      "created_at": "2026-08-16T11:42:47Z"
-    },
-    "e1e2f441-065e-40a7-a25d-42df0cfdd986": {
-      "id": "e1e2f441-065e-40a7-a25d-42df0cfdd986",
-      "title": "Senior Python Backend Engineer",
-      "description": "Looking for a skilled Python backend engineer with 4+ years of experience in FastAPI, PostgreSQL, REST APIs, Docker and AWS for our platform team.",
-      "requirements": {
-        "title": "Python Backend Engineer",
-        "skills": [
-          "Python",
-          "FastAPI",
-          "PostgreSQL",
-          "REST APIs",
-          "Docker",
-          "AWS"
-        ],
-        "experience_years": 4.0,
-        "location": "Not specified",
-        "education": "Not specified",
-        "target_salary": "Not specified",
-        "notice_period_days": 30,
-        "technical_requirements": "Backend development using Python with FastAPI, PostgreSQL, REST APIs, Docker, and AWS."
-      },
-      "agent_config": {
-        "name": "Screening: Senior Python Backend Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Python Backend Engineer. Qualify their experience, core technical skills (Python, FastAPI, PostgreSQL, REST APIs, Docker, AWS), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Python Backend Engineer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Python Backend Engineer role that requires Python, FastAPI, PostgreSQL, REST APIs, Docker, AWS. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:43:37Z"
-    },
-    "3c876873-4365-4d0a-b4a9-05392bd90194": {
-      "id": "3c876873-4365-4d0a-b4a9-05392bd90194",
-      "title": "Senior Python Backend Engineer",
-      "description": "We need a Python developer with 4+ years experience in FastAPI, PostgreSQL, REST APIs, Docker.",
-      "requirements": {
-        "title": "Python developer",
-        "skills": [
-          "FastAPI",
-          "PostgreSQL",
-          "REST APIs",
-          "Docker"
-        ],
-        "experience_years": 4.0,
-        "location": "N/A",
-        "education": "N/A",
-        "target_salary": "N/A",
-        "notice_period_days": 30,
-        "technical_requirements": "Experience with FastAPI, PostgreSQL, REST APIs, and Docker."
-      },
-      "agent_config": {
-        "name": "Screening: Senior Python Backend Engineer",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Python developer. Qualify their experience, core technical skills (FastAPI, PostgreSQL, REST APIs, Docker), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Python developer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Python developer role that requires FastAPI, PostgreSQL, REST APIs, Docker. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:51:34Z"
-    },
-    "ee6efc52-8ced-4e06-bc8b-e5e57527eada": {
-      "id": "ee6efc52-8ced-4e06-bc8b-e5e57527eada",
-      "title": "Test",
-      "description": "Python developer needed.",
-      "requirements": {
-        "title": "Python Developer",
-        "skills": [
-          "Python"
-        ],
-        "experience_years": 0.0,
-        "location": null,
-        "education": null,
-        "target_salary": "Competitive",
-        "notice_period_days": 30,
-        "technical_requirements": "Python"
-      },
-      "agent_config": {
-        "name": "Screening: Test",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Python Developer. Qualify their experience, core technical skills (Python), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Python Developer opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Python Developer role that requires Python. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T11:56:56Z"
-    },
-    "d45f83bf-4070-445d-9a8d-63bb98d6339c": {
-      "id": "d45f83bf-4070-445d-9a8d-63bb98d6339c",
-      "title": "Business Development Executive",
-      "description": "A Business Development (BizDev) role focuses on driving long-term company growth through strategic partnerships, new market expansion, and high-value client acquisition. Professionals in this field balance analytical market research with relationship management to increase revenue and scale business operations\n",
-      "requirements": {
-        "title": "Business Development (BizDev)",
-        "skills": [
-          "Strategic Partnerships",
-          "Market Expansion",
-          "Client Acquisition",
-          "Analytical Market Research",
-          "Relationship Management",
-          "Revenue Growth",
-          "Business Scaling"
-        ],
-        "experience_years": null,
-        "location": null,
-        "education": null,
-        "target_salary": null,
-        "notice_period_days": 30,
-        "technical_requirements": null
-      },
-      "agent_config": {
-        "name": "Screening: Business Development Executive",
-        "language": "ENGLISH",
-        "voice_persona": "NEHA",
-        "persona_name": "Seema",
-        "objective": "Screen candidates for the position of Business Development (BizDev). Qualify their experience, core technical skills (Strategic Partnerships, Market Expansion, Client Acquisition, Analytical Market Research, Relationship Management, Revenue Growth, Business Scaling), notice period, and salary expectations.",
-        "introduction": "Hi! This is {persona_name}, an AI recruiting assistant calling about a Business Development (BizDev) opportunity. Is now a good time to chat?",
-        "agent_prompt": "You are {persona_name}, a professional AI recruiting assistant. You are calling about a Business Development (BizDev) role that requires Strategic Partnerships, Market Expansion, Client Acquisition, Analytical Market Research, Relationship Management, Revenue Growth, Business Scaling. Gauge the candidate's interest, ask about their current notice period, expected CTC, years of experience, and whether they'd like a follow-up with our recruiter. Be friendly, concise, and respectful.",
-        "result_prompt": "From the conversation, extract: interested (Yes/No/Maybe), notice_period (in days), expected_ctc (annual in INR), years_of_experience (number), and a short summary of how the call went.",
-        "silence_response": "Are you there?",
-        "conclusion": "Thank you for your time! Have a wonderful day.",
-        "custom_variables": [
-          "callee_name",
-          "job_title",
-          "company",
-          "jd_summary"
-        ],
-        "result_schema": {
-          "interested": "",
-          "notice_period": "",
-          "expected_ctc": "",
-          "years_of_experience": "",
-          "summary": ""
-        }
-      },
-      "created_at": "2026-08-16T15:18:12Z"
+      "created_at": "2026-08-16T17:13:53Z"
     }
   },
   "candidates": {
-    "a859db62-b9c6-49e3-a393-ab1177c1c3ee": {
-      "id": "a859db62-b9c6-49e3-a393-ab1177c1c3ee",
-      "job_id": "58b864b4-726b-4d49-8d8d-ff6dc8d8040a",
-      "name": "Siddharth Johnson",
-      "phone": "+919999999999",
-      "email": "siddharth.johnson@infosys.com",
-      "pdl_id": "pdl_422937",
-      "title": "Machine learning Engineer",
-      "company": "Infosys",
-      "skills": [
-        "Django",
-        "REST APIs",
-        "Tensorflow",
-        "SQL"
-      ],
-      "call_id": null,
-      "call_status": "NOT_STARTED",
-      "recording_url": null,
-      "answers": {},
-      "evaluation": {},
-      "created_at": "2026-08-16T01:43:51Z"
-    },
-    "4aa7b6d9-d4ad-4677-809e-c4b7feae5e69": {
-      "id": "4aa7b6d9-d4ad-4677-809e-c4b7feae5e69",
-      "job_id": "58b864b4-726b-4d49-8d8d-ff6dc8d8040a",
-      "name": "Rahul Nair",
-      "phone": "+919999999999",
-      "email": "rahul.nair@acmecorp.com",
-      "pdl_id": "pdl_705829",
-      "title": "Machine learning Engineer",
-      "company": "Acme Corp",
-      "skills": [
-        "Docker",
-        "Git",
-        "AWS",
-        "Pytorch",
-        "SQL",
-        "Django",
-        "JavaScript"
-      ],
-      "call_id": null,
-      "call_status": "NOT_STARTED",
-      "recording_url": null,
-      "answers": {},
-      "evaluation": {},
-      "created_at": "2026-08-16T01:44:18Z"
-    },
-    "41d5fc81-3bdc-4964-b0fc-ea6cb686810b": {
-      "id": "41d5fc81-3bdc-4964-b0fc-ea6cb686810b",
-      "job_id": "a5f6017a-1c41-48ed-8e3b-9eb76bb0b836",
-      "name": "Michael Verma",
-      "phone": "+18528171332",
-      "email": "michael.verma@infosys.com",
-      "pdl_id": "pdl_784963",
-      "title": "Business Development Executive",
-      "company": "Infosys",
-      "skills": [
-        "Django",
-        "REST APIs",
-        "Python",
-        "Git",
-        "JavaScript",
-        "SQL"
-      ],
-      "call_id": null,
-      "call_status": "NOT_STARTED",
-      "recording_url": null,
-      "answers": {},
-      "evaluation": {},
-      "created_at": "2026-08-16T02:52:50Z"
-    },
-    "84ae5bdf-3ff2-4105-85fd-ac57f1cb9cfc": {
-      "id": "84ae5bdf-3ff2-4105-85fd-ac57f1cb9cfc",
-      "job_id": "58b864b4-726b-4d49-8d8d-ff6dc8d8040a",
-      "name": "Michael Miller",
-      "phone": "+918098012099",
-      "email": "michael.miller@meta.com",
-      "pdl_id": "pdl_339997",
+    "753875c3-1b41-428f-9937-2376f69d2a8a": {
+      "id": "753875c3-1b41-428f-9937-2376f69d2a8a",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Wilhem Kornhauser",
+      "phone": "9023787117",
+      "email": "",
+      "source_id": "153222474",
       "title": "Machine Learning Engineer",
-      "company": "Meta",
+      "company": "Fiix by Rockwell Automation",
       "skills": [
-        "JavaScript",
-        "SQL",
-        "Django",
-        "Docker",
-        "AWS",
-        "Python",
-        "REST APIs"
+        ".Net",
+        "Across",
+        "Active Directory",
+        "Ad Spend",
+        "Agentic Ai",
+        "Agentic Rag",
+        "Ai (Artificial Intelligence)",
+        "Ai Engineer",
+        "Ai/Ml",
+        "Amazon Sagemaker"
       ],
-      "call_id": null,
-      "call_status": "NOT_STARTED",
-      "recording_url": null,
-      "answers": {},
-      "evaluation": {},
-      "created_at": "2026-08-16T12:02:12Z"
+      "call_id": "c0b7904d-8cb7-43ac-a1de-d776e809bc06",
+      "call_status": "COMPLETED",
+      "stage": "INTERVIEW",
+      "recruiter_notes": "",
+      "follow_up_at": "",
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": "https://hunar-voice-prod-071853465125-ap-south-1-an.s3.ap-south-1.amazonaws.com/call/recording/fde-hiring/c0b7904d-8cb7-43ac-a1de-d776e809bc06_0_plivo.wav",
+      "answers": {
+        "expected_ctc": "1200000",
+        "interested": "Yes",
+        "notice_period": "30",
+        "summary": "The call was about a machine learning engineer opportunity. Yasmin confirmed interest and shared her two years of experience, a notice period of thirty days, a current CTC of four lakhs, and an expected CTC of twelve lakhs.",
+        "years_of_experience": "2"
+      },
+      "evaluation": {
+        "overall_score": 70,
+        "technical_score": 45,
+        "communication_score": 50,
+        "experience_score": 100,
+        "requirements_score": 100,
+        "recommendation": "REJECT",
+        "decision": "HOLD",
+        "confidence": "HIGH",
+        "strengths": [
+          "Meets or exceeds the experience requirement."
+        ],
+        "risks": [
+          "No required technical skills were scored during screening."
+        ],
+        "interview_focus": [
+          "Validate the most important job-specific technical skill with a practical example.",
+          "Clarify scope of ownership and measurable outcomes in the most relevant role.",
+          "Confirm availability, notice period, and compensation expectations."
+        ],
+        "justification": "Hold based on a weighted score of 70/100. No required technical skills were scored during screening."
+      },
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8",
+      "stage_changed_at": "2026-08-16T12:17:52Z",
+      "outreach_log": [
+        {
+          "type": "FOLLOW_UP",
+          "message": "Hi Wilhem Kornhauser, following up on the machine learning engineer opportunity. Please let us know whether you would like to continue in the process.",
+          "prepared_at": "2026-08-16T12:14:38Z"
+        }
+      ],
+      "preferred_contact_time": ""
     },
-    "4bc75028-1e57-4939-a279-30ab672e9203": {
-      "id": "4bc75028-1e57-4939-a279-30ab672e9203",
-      "job_id": "a5f15198-996e-4e07-8796-8dc1ef2eff9c",
-      "name": "Santanu Bhattacharjee",
+    "5fcae89c-78c0-485e-bb80-98524e8e2a18": {
+      "id": "5fcae89c-78c0-485e-bb80-98524e8e2a18",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Aditya Chingale",
       "phone": "Unknown",
       "email": "",
-      "pdl_id": "96510136",
-      "title": "Senior Machine Learning Engineer",
-      "company": "ServiceNow",
+      "source_id": "120035137",
+      "title": "Data Scientist III",
+      "company": "LexisNexis Risk Solutions",
       "skills": [
-        "Android App Development",
-        "Artificial Intelligence (Ai)",
-        "Chatgpt",
-        "Cohort Analysis",
-        "Collaboration",
-        "Convolutional Neural Networks (Cnn)",
-        "Data",
-        "Data Scientist",
-        "Deep Learning",
-        "Development"
+        "Analysis",
+        "Antenna Design",
+        "Assessment",
+        "Azure",
+        "Azure Database",
+        "Azure Etl",
+        "Azure Ml",
+        "Azure Sql",
+        "Azure Sql Database",
+        "Blast"
       ],
       "call_id": null,
       "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
       "recording_url": null,
       "answers": {},
       "evaluation": {},
-      "created_at": "2026-08-16T13:16:29Z",
-      "agent_id": "1f79615a-27d9-484e-a8fe-bb8cc84f694d"
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
     },
-    "7100dbef-a81f-43ed-aeb3-ddd7ab6be085": {
-      "id": "7100dbef-a81f-43ed-aeb3-ddd7ab6be085",
-      "job_id": "a5f15198-996e-4e07-8796-8dc1ef2eff9c",
-      "name": "Mohamed Ibrahim A.",
+    "293e3aee-9678-4b2b-9576-09cb24a962e5": {
+      "id": "293e3aee-9678-4b2b-9576-09cb24a962e5",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Padmelaxmi Viswanathan",
       "phone": "Unknown",
       "email": "",
-      "pdl_id": "151017525",
-      "title": "Principal Engineer - Machine Learning",
-      "company": "Freshworks",
+      "source_id": "23456685",
+      "title": "Data Scientist",
+      "company": "Singular Analysts INC",
       "skills": [
-        "Accessibility",
+        "Ab Initio",
+        "Administrator",
+        "Analyst",
+        "Data",
+        "Data Analyst",
+        "Data Engineer",
+        "Data Scientist",
+        "Developer",
+        "Devops",
+        "Engineer"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "6aa619ad-35af-43ec-93ba-786c9ade84ba": {
+      "id": "6aa619ad-35af-43ec-93ba-786c9ade84ba",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Cameron Wichael",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "10451867",
+      "title": "Board Member",
+      "company": "VR/AR Association (VRARA) - Alabama Chapter",
+      "skills": [
+        ".Net",
+        ".Net Core",
+        "Air",
+        "Analysis",
+        "Analyst",
+        "Analyst Software",
+        "Augmented Reality",
+        "Benefits",
+        "Board",
+        "Board Governance"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "b941a564-773a-472b-b497-0cb68719a6aa": {
+      "id": "b941a564-773a-472b-b497-0cb68719a6aa",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Syed Faraz Naqvi MSc",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "194720500",
+      "title": "Data/ML Engineer",
+      "company": "Motive",
+      "skills": [
+        "Access",
+        "Access Controls",
+        "Accounts",
+        "Accounts Management",
         "Across",
         "Ai (Artificial Intelligence)",
-        "Ai Architect",
-        "Ai Co-Pilot Usage",
-        "Ai Platform",
-        "Ai-Driven Systems",
-        "Algorithms",
-        "Amazon Web Services (Aws)",
+        "Ai Systems",
+        "Ai Tools",
+        "Ai-Driven Decision-Making",
         "Analysis"
       ],
       "call_id": null,
       "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
       "recording_url": null,
       "answers": {},
       "evaluation": {},
-      "created_at": "2026-08-16T15:12:21Z",
-      "agent_id": "9cb62c41-ffea-48ba-b535-fb85e66be562"
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
     },
-    "dc7a2350-e96f-44cb-affd-4d29a72f52e1": {
-      "id": "dc7a2350-e96f-44cb-affd-4d29a72f52e1",
-      "job_id": "a5f15198-996e-4e07-8796-8dc1ef2eff9c",
-      "name": "Vishal Batra",
-      "phone": "9023787117",
-      "email": "",
-      "pdl_id": "147248781",
-      "title": "Senior Machine Learning Engineer",
-      "company": "ICE Mortgage Technology",
-      "skills": [
-        "Advanced Analytics",
-        "Analysis",
-        "Analyst",
-        "Analytical",
-        "Analytical Techniques",
-        "Analytics",
-        "Building Business",
-        "Business Analyst",
-        "Business Application",
-        "Computer Science"
-      ],
-      "call_id": "a7ef4030-47bc-4cb6-9da6-48a3dbb148db",
-      "call_status": "NOT_STARTED",
-      "recording_url": null,
-      "answers": {},
-      "evaluation": {},
-      "created_at": "2026-08-16T15:12:22Z",
-      "agent_id": "9cb62c41-ffea-48ba-b535-fb85e66be562"
-    },
-    "df0f796d-affe-4710-95ad-4637bc7bb381": {
-      "id": "df0f796d-affe-4710-95ad-4637bc7bb381",
-      "job_id": "a5f15198-996e-4e07-8796-8dc1ef2eff9c",
-      "name": "Thaninki Anusha",
+    "ec9746fe-1c8f-4f47-ba87-5e28c353cb04": {
+      "id": "ec9746fe-1c8f-4f47-ba87-5e28c353cb04",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Shota Saito",
       "phone": "Unknown",
       "email": "",
-      "pdl_id": "18086332",
-      "title": "Senior Product Development Engineer",
-      "company": "Phenom",
+      "source_id": "130155470",
+      "title": "Senior Software Engineer",
+      "company": "Indeed",
       "skills": [
+        "Ai (Artificial Intelligence)",
+        "Ai Recruiter",
+        "Aircraft Piloting",
+        "Analysis",
+        "Business Intelligence",
+        "Business Intelligence Engineer",
+        "Data",
+        "Data Analysis",
+        "Data Mining",
+        "Data Scientist"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "09a7ba8d-214d-4b83-95a4-7f0734c98112": {
+      "id": "09a7ba8d-214d-4b83-95a4-7f0734c98112",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Athma Narayanan",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "188464139",
+      "title": "Senior AI/ML software engineer",
+      "company": "NVIDIA",
+      "skills": [
+        "3D",
+        "3D Ultrasound",
+        "Active Learning",
+        "Active Suspension",
+        "Agentic Ai",
+        "Ai (Artificial Intelligence)",
+        "Ai Research",
+        "Ai/Ml",
+        "Ai/Ml Research",
+        "Analysis"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "8d6a8892-c0f3-4889-ad50-1161a059a6d6": {
+      "id": "8d6a8892-c0f3-4889-ad50-1161a059a6d6",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Florian C. EMBA",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "54629875",
+      "title": "Service Operations Center Manager",
+      "company": "Telekom Romania",
+      "skills": [
+        "Accountability",
+        "Across",
+        "Act (Acceptance And Commitment Therapy / Crm)",
+        "Alcatel-Lucent",
+        "Analysis",
+        "Brands",
+        "Brewing",
+        "Business Initiatives",
+        "Business Services",
+        "Center Manager"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "57f65af4-a2e9-42f7-9081-262651124d84": {
+      "id": "57f65af4-a2e9-42f7-9081-262651124d84",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Alexandra Duzhinskaya",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "125023309",
+      "title": "Senior Machine Learning Engineer",
+      "company": "FreshBooks",
+      "skills": [
+        "Ai (Artificial Intelligence)",
+        "Ai Project",
+        "Ai Project Development",
+        "Algebra",
+        "Architecture",
+        "Backend",
+        "Calculus",
+        "Career Transition",
+        "Classification",
+        "Commercial"
+      ],
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
+    },
+    "7bc6ac6f-7465-4c72-a09a-c46b0e210aaf": {
+      "id": "7bc6ac6f-7465-4c72-a09a-c46b0e210aaf",
+      "job_id": "66c1f753-46bc-41fe-9b98-8203f53b31a7",
+      "name": "Tharun Bethi",
+      "phone": "Unknown",
+      "email": "",
+      "source_id": "115161418",
+      "title": "Senior Software Engineer",
+      "company": "Apple",
+      "skills": [
+        "Automating",
+        "Cloud Computing",
+        "Cloud Networking",
         "Development",
         "Development Engineering",
         "Engineer",
-        "Machine Learning",
-        "Machine Learning Engineering",
-        "Product Development",
-        "Product Development Engineer",
-        "Software Development"
+        "Network Security",
+        "Networking",
+        "Security",
+        "Senior Software Engineer"
       ],
-      "call_id": "sim_2d0a8f94",
-      "call_status": "COMPLETED",
-      "recording_url": "https://recordings.hunar.ai/mock_audio_rec.mp3",
-      "answers": {
-        "experience": 3.0,
-        "communication": 8,
-        "notice_period": 30,
-        "salary_expectation": 1500000,
-        "expected_ctc": "15 LPA",
-        "years_of_experience": "3",
-        "interested": "Yes",
-        "summary": "Candidate is interested in the role. Has relevant experience and skills. Notice period is 30 days.",
-        "python": 7,
-        "sql": 7
-      },
-      "evaluation": {
-        "overall_score": 75,
-        "technical_score": 75,
-        "communication_score": 75,
-        "experience_score": 75,
-        "requirements_score": 75,
-        "recommendation": "SHORTLIST",
-        "justification": "Evaluation generated under default settings."
-      },
-      "created_at": "2026-08-16T15:12:24Z"
-    },
-    "f7eccfb2-1eac-41c9-b06f-534b29a6c9d0": {
-      "id": "f7eccfb2-1eac-41c9-b06f-534b29a6c9d0",
-      "job_id": "d45f83bf-4070-445d-9a8d-63bb98d6339c",
-      "name": "Santosh Kumar",
-      "phone": "9023787117",
-      "email": "",
-      "pdl_id": "840945813",
-      "title": "Business Development Specialist",
-      "company": "Certskills",
-      "skills": [
-        "Administrative",
-        "Administrative Assistant",
-        "Aws",
-        "Business Development",
-        "Ccna",
-        "Ceh",
-        "Cisa",
-        "Comptia",
-        "Cyber Security",
-        "Cyber Security Expertise"
-      ],
-      "call_id": "c718ea58-1012-48dc-8830-c4da263d9bdc",
-      "call_status": "COMPLETED",
-      "recording_url": "https://hunar-voice-prod-071853465125-ap-south-1-an.s3.ap-south-1.amazonaws.com/call/recording/fde-hiring/c718ea58-1012-48dc-8830-c4da263d9bdc_0_plivo.wav",
-      "answers": {
-        "expected_ctc": "NOT AVAILABLE",
-        "interested": "Yes",
-        "notice_period": "30",
-        "summary": "The user expressed interest in a business development role and provided their experience and current CTC. They mentioned a notice period of thirty days and confirmed interest in a follow-up conversation with the recruiter.",
-        "years_of_experience": "4"
-      },
-      "evaluation": {
-        "overall_score": 75,
-        "technical_score": 75,
-        "communication_score": 75,
-        "experience_score": 75,
-        "requirements_score": 75,
-        "recommendation": "SHORTLIST",
-        "justification": "Evaluation generated under default settings."
-      },
-      "created_at": "2026-08-16T15:18:59Z",
-      "agent_id": "ccd1ba74-4fbb-44b8-8b59-05c0025fd53c"
+      "call_id": null,
+      "call_status": "FAILED",
+      "stage": "SOURCED",
+      "recruiter_notes": "",
+      "follow_up_at": null,
+      "follow_up_status": "NOT_SCHEDULED",
+      "recording_url": null,
+      "answers": {},
+      "evaluation": {},
+      "created_at": "2026-08-16T17:14:42Z",
+      "agent_id": "888bdd24-04ba-48b2-8fa5-a05cc153bcf8"
     }
   }
 }

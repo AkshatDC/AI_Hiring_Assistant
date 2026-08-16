@@ -1,32 +1,124 @@
-# React + TypeScript + Vite
+# Frontend README
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This folder contains the React frontend for the AI Hiring Assistant and People Search & Reachout app.
 
-Currently, two official plugins are available:
+## Purpose
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The frontend provides a single-screen workflow for:
 
-## React Compiler
+- creating a job from a job description
+- reviewing parsed requirements
+- sourcing candidates
+- adding candidates to the pipeline
+- editing contact details when enrichment is incomplete
+- creating and selecting voice agents
+- triggering calls
+- reviewing results in the dashboard
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- lucide-react icons
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Main files
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- `src/App.tsx` - the full application UI and API integration
+- `src/App.css` - intentionally empty to avoid style conflicts
+- `src/index.css` - global styles
+- `src/main.tsx` - React bootstrap
+
+## Main screens
+
+The app is organized into four tabs:
+
+1. Job Description
+2. Sourcing
+3. Voice Calls
+4. Dashboard
+
+### Job Description
+
+- Paste the job title and job description.
+- The backend extracts structured requirements.
+- The form can also prefill the agent prompt from the parsed JD.
+
+### Sourcing
+
+- Search candidates by title, skills, location, and experience.
+- Add candidates one by one or bulk add them to the pipeline.
+- If a phone number or email is missing, it can be edited manually.
+
+### Voice Calls
+
+- View the candidate queue.
+- Create a new Hunar voice agent.
+- Pick an existing agent.
+- Trigger single calls or bulk outreach.
+- Simulate calls for demo/testing.
+
+### Dashboard
+
+- Review call status and ranking.
+- See AI evaluation results.
+- Inspect answers gathered during the call.
+- Open recordings when available.
+
+## API connection
+
+The frontend talks to the backend at:
+
+```text
+http://localhost:8000/api
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+That value defaults to `http://localhost:8000/api` during local development, but you can override it at build time with `VITE_API_BASE_URL`.
+
+Example for a deployed backend:
+
+```powershell
+$env:VITE_API_BASE_URL="https://your-backend.example.com/api"
+npm run build
+```
+
+If the frontend and backend are deployed on the same domain, you can point the variable at a relative path such as `/api`.
+
+## Run the frontend
+
+From the `frontend/` folder:
+
+```powershell
+npm install
+npm run dev
+```
+
+The Vite dev server will print the local URL, usually `http://localhost:5173`.
+
+## Build and lint
+
+```powershell
+npm run build
+npm run lint
+```
+
+## Behavior notes
+
+- The UI polls candidate status while you are on the Calls or Dashboard tab.
+- If the backend returns mock or partial data, the UI still renders the pipeline so you can keep testing the flow.
+- Contact fields may need manual correction because of current enrichment subscription limits.
+
+## User experience flow
+
+1. Paste the JD.
+2. Search for candidates.
+3. Add candidates to the pipeline.
+4. Fix missing contact details if needed.
+5. Create or choose a Hunar agent.
+6. Start calls.
+7. Watch results arrive in the dashboard.
+
+## Development note
+
+The current README is intentionally focused on the app workflow rather than the template defaults that come with Vite.

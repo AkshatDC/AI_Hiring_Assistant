@@ -303,3 +303,57 @@ def search_people(
 
     print("[Sourcing] Both unavailable — using mock data")
     return generate_mock_candidates(title, skills, location, size)
+
+
+def enrich_candidate(first_name: str, last_name: str, company: str, linkedin_url: str = "") -> Optional[Dict[str, Any]]:
+    APOLLO_API_KEY = _get_apollo_key()
+    if not APOLLO_API_KEY:
+        print("[Apollo Enrich] API key not set.")
+        return None
+
+    headers = {
+        "X-Api-Key": APOLLO_API_KEY,
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+    }
+    
+    details = {
+        "first_name": first_name,
+        "last_name": last_name,
+    }
+    if company:
+        details["organization_name"] = company
+    if linkedin_url:
+        details["linkedin_url"] = linkedin_url
+
+    body = {
+        "details": [details]
+    }
+
+    try:
+        resp = requests.post("https://api.apollo.io/api/v1/people/bulk_match", headers=headers, json=body, timeout=20)
+        if resp.status_code == 200:
+            data = resp.json()
+            matches = data.get("matches", [])
+            if matches and matches[0]:
+                p = matches[0]
+                raw_phones = p.get("phone_numbers", [])
+                phone_list = []
+                for ph in raw_phones:
+                    if isinstance(ph, dict):
+                        n = ph.get("sanitized_number") or ph.get("raw_number") or ""
+                        if n:
+                            phone_list.append(n)
+                    elif isinstance(ph, str) and ph:
+                        phone_list.append(ph)
+                return {
+                    "phone_numbers": phone_list,
+                    "mobile_phone": phone_list[0] if phone_list else "",
+                    "work_email": p.get("email") or ""
+                }
+        else:
+            print(f"[Apollo Enrich] Failed with status {resp.status_code}: {resp.text[:200]}")
+        return None
+    except Exception as e:
+        print(f"[Apollo Enrich] Exception: {e}")
+        return None

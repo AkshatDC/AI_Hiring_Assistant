@@ -92,75 +92,152 @@ def extract_jd_requirements(jd_text: str) -> Dict[str, Any]:
             "technical_requirements": "Not specified"
         }
 
+def _number(value: Any) -> Optional[float]:
+    """Parse numeric call answers such as `3 years` without treating text as zero."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    match = re.search(r"-?\d+(?:\.\d+)?", str(value))
+    return float(match.group()) if match else None
+
+
+def _answer(candidate_answers: Dict[str, Any], *keys: str) -> Any:
+    lowered = {str(key).lower(): value for key, value in candidate_answers.items()}
+    for key in keys:
+        if key in lowered and lowered[key] not in (None, ""):
+            return lowered[key]
+    return None
+
+
+def _is_interested(value: Any) -> Optional[bool]:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"yes", "y", "true", "interested", "positive"}:
+        return True
+    if normalized in {"no", "n", "false", "not interested", "declined"}:
+        return False
+    return None
+
+
+def _clamp_score(value: Any, default: int = 50) -> int:
+    number = _number(value)
+    if number is None:
+        return default
+    if number <= 10:
+        number *= 10
+    return max(0, min(100, round(number)))
+
+
+def _heuristic_evaluation(candidate_answers: Dict[str, Any], jd_requirements: Dict[str, Any]) -> Dict[str, Any]:
+    """Produce a conservative, explainable evaluation when AI output is unavailable."""
+    experience = _number(_answer(candidate_answers, "experience", "years_of_experience"))
+    required_experience = _number(jd_requirements.get("experience_years")) or 0
+    experience_score = 50 if experience is None else (
+        100 if required_experience == 0 else _clamp_score((experience / required_experience) * 100)
+    )
+
+    communication_value = _answer(candidate_answers, "communication", "communication_score")
+    communication_score = _clamp_score(communication_value, 50)
+
+    required_skills = [str(skill).lower().replace(".", "") for skill in jd_requirements.get("skills", [])]
+    measured_skills = []
+    missing_skills = []
+    for skill in required_skills:
+        value = _answer(candidate_answers, skill, skill.replace(" ", "_"), skill.replace("-", "_"))
+        if value is None:
+            missing_skills.append(skill)
+        else:
+            measured_skills.append(_clamp_score(value))
+    technical_score = round(sum(measured_skills) / len(measured_skills)) if measured_skills else 45
+
+    notice = _number(_answer(candidate_answers, "notice_period", "notice_period_days"))
+    permitted_notice = _number(jd_requirements.get("notice_period_days")) or 30
+    requirements_score = 60 if notice is None else (100 if notice <= permitted_notice else max(30, 100 - round((notice - permitted_notice) * 1.5)))
+    interest = _is_interested(_answer(candidate_answers, "interested", "interest"))
+    if interest is False:
+        requirements_score = min(requirements_score, 20)
+    elif interest is None:
+        requirements_score = min(requirements_score, 70)
+
+    overall_score = round(
+        technical_score * 0.40 + experience_score * 0.25 + communication_score * 0.15 + requirements_score * 0.20
+    )
+    risks = []
+    if interest is False:
+        risks.append("Candidate is not interested in progressing.")
+    if not measured_skills:
+        risks.append("No required technical skills were scored during screening.")
+    elif missing_skills:
+        risks.append("Validate unscored skills: " + ", ".join(missing_skills[:3]) + ".")
+    if experience is None:
+        risks.append("Years of experience were not confirmed.")
+    if notice is None:
+        risks.append("Notice period was not confirmed.")
+    elif notice > permitted_notice:
+        risks.append(f"Notice period is {round(notice)} days vs {round(permitted_notice)} day target.")
+
+    if interest is False:
+        decision = "DECLINE"
+    elif not measured_skills or experience is None or notice is None:
+        decision = "HOLD"
+    elif overall_score >= 75 and technical_score >= 65 and experience_score >= 65 and requirements_score >= 60:
+        decision = "ADVANCE"
+    else:
+        decision = "HOLD"
+
+    strengths = []
+    if technical_score >= 65:
+        strengths.append(f"Technical screening score: {technical_score}/100.")
+    if experience_score >= 80:
+        strengths.append("Meets or exceeds the experience requirement.")
+    if communication_score >= 70:
+        strengths.append("Clear communication signal from the screening call.")
+
+    return {
+        "overall_score": overall_score,
+        "technical_score": technical_score,
+        "communication_score": communication_score,
+        "experience_score": experience_score,
+        "requirements_score": requirements_score,
+        "recommendation": "SHORTLIST" if decision == "ADVANCE" else "REJECT",
+        "decision": decision,
+        "confidence": "HIGH" if len(risks) <= 1 else "MEDIUM" if len(risks) <= 3 else "LOW",
+        "strengths": strengths,
+        "risks": risks,
+        "interview_focus": [
+            "Validate the most important job-specific technical skill with a practical example.",
+            "Clarify scope of ownership and measurable outcomes in the most relevant role.",
+            "Confirm availability, notice period, and compensation expectations."
+        ],
+        "justification": f"{decision.title()} based on a weighted score of {overall_score}/100. " + (
+            "; ".join(risks) if risks else "Screening evidence meets the advance criteria."
+        )
+    }
+
+
 def evaluate_candidate_results(candidate_answers: Dict[str, Any], jd_requirements: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Evaluates Candidate's Hunar call answers against Job criteria using Gemini or fallback scoring rules.
-    """
+    """Evaluate screening evidence with explicit gates, then enrich it with Gemini when available."""
+    baseline = _heuristic_evaluation(candidate_answers, jd_requirements)
     GEMINI_API_KEY = _get_gemini_key()
     if not GEMINI_API_KEY:
-        # Fallback scoring calculation logic
-        # candidate_answers format like:
-        # {
-        #   "experience": 2.5,
-        #   "python": 8,
-        #   "sql": 7,
-        #   "communication": 8,
-        #   "notice_period": 30,
-        #   "salary_expectation": 600000,
-        #   "interested": true
-        # }
-        
-        experience = float(candidate_answers.get("experience", 1.0))
-        comm = float(candidate_answers.get("communication", 7.0))
-        notice = float(candidate_answers.get("notice_period", 30.0))
-        interest = bool(candidate_answers.get("interested", True))
-        
-        # Simple scores
-        req_exp = float(jd_requirements.get("experience_years", 2.0))
-        exp_score = min(100, int((experience / req_exp) * 100)) if req_exp > 0 else 90
-        comm_score = min(100, int((comm / 10.0) * 100)) if comm <= 10 else int(comm)
-        
-        # Technical score
-        tech_ratings = [float(v) for k, v in candidate_answers.items() if k not in ["experience", "communication", "notice_period", "salary_expectation", "interested"] and isinstance(v, (int, float))]
-        if tech_ratings:
-            avg_tech = sum(tech_ratings) / len(tech_ratings)
-            tech_score = min(100, int((avg_tech / 10.0) * 100)) if avg_tech <= 10 else int(avg_tech)
-        else:
-            tech_score = 80
-            
-        reqs_score = 100
-        if notice > 60:
-            reqs_score -= 20
-            
-        overall_score = int((exp_score * 0.2) + (tech_score * 0.4) + (comm_score * 0.2) + (reqs_score * 0.2))
-        
-        rec = "SHORTLIST" if overall_score >= 75 and interest else "REJECT"
-        
-        return {
-            "overall_score": overall_score,
-            "technical_score": tech_score,
-            "communication_score": comm_score,
-            "experience_score": exp_score,
-            "requirements_score": reqs_score,
-            "recommendation": rec,
-            "justification": f"Candidate meets {overall_score}% of the requirements. Technical assessment rated at {tech_score}/100 with communication rated at {comm_score}/100. Sourced candidate notice period of {notice} days aligns well with business requirements."
-        }
+        return baseline
 
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
         prompt = f"""
-        Compare the candidate's call responses/screening criteria against the JD requirements and perform a hiring evaluation.
+        Summarize the screening evidence for a recruiter. Do not invent facts that are not in the answers.
         Return ONLY valid JSON. Do not include markdown code block formatting or any other text.
         
         JSON schema:
         {{
-            "overall_score": 85, (0-100 integer)
-            "technical_score": 80, (0-100 integer)
-            "communication_score": 90, (0-100 integer)
-            "experience_score": 85, (0-100 integer)
-            "requirements_score": 90, (0-100 integer matching notice/location/salary constraints)
-            "recommendation": "SHORTLIST", ("SHORTLIST" or "REJECT")
-            "justification": "Detailed explanation of why candidate was shortlisted or rejected based on JD matching."
+            "strengths": ["Evidence-backed strength"],
+            "risks": ["Evidence gap or practical risk"],
+            "interview_focus": ["Specific follow-up question or validation topic"],
+            "justification": "Short evidence-based recruiter summary."
         }}
 
         JD Requirements:
@@ -176,18 +253,16 @@ def evaluate_candidate_results(candidate_answers: Dict[str, Any], jd_requirement
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
-        return json.loads(text)
+        qualitative = json.loads(text)
+        for field in ("strengths", "risks", "interview_focus"):
+            if isinstance(qualitative.get(field), list):
+                baseline[field] = [str(item) for item in qualitative[field][:3] if str(item).strip()]
+        if isinstance(qualitative.get("justification"), str) and qualitative["justification"].strip():
+            baseline["justification"] = qualitative["justification"].strip()
+        return baseline
     except Exception as e:
         print(f"Gemini candidate evaluation failed: {e}")
-        return {
-            "overall_score": 75,
-            "technical_score": 75,
-            "communication_score": 75,
-            "experience_score": 75,
-            "requirements_score": 75,
-            "recommendation": "SHORTLIST",
-            "justification": "Evaluation generated under default settings."
-        }
+        return baseline
 
 
 def rank_candidates(

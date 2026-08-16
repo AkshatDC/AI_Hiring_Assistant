@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Briefcase, Users, PhoneCall, Search, CheckCircle, XCircle,
-  Play, RefreshCw, Upload, Sparkles, FileText, Compass,
-  MapPin, Check, Clock, AlertCircle, PhoneOff, Star,
-  Bot, Plus, ChevronDown, ChevronRight, Zap, BarChart3,
-  Mic, Globe, ListChecks, ArrowRight, Settings, Trash2,
-  ExternalLink, TrendingUp, Shield, Phone, Edit3, Save, X,
-  Filter, SlidersHorizontal
+  Briefcase, Users, PhoneCall, Search, CheckCircle,
+  Play, RefreshCw, Sparkles, FileText, Compass,
+  MapPin, Check, AlertCircle, Star,
+  Bot, Plus, Zap, BarChart3,
+  Mic, Globe, ArrowRight, Trash2,
+  ExternalLink, Shield, Phone, Edit3, Save,
+  Filter, CalendarDays, ClipboardList, Mail, Copy, ClipboardCheck, ShieldCheck
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,9 +53,36 @@ interface Candidate {
     experience_score?: number;
     requirements_score?: number;
     recommendation?: 'SHORTLIST' | 'REJECT';
+    decision?: 'ADVANCE' | 'HOLD' | 'DECLINE';
+    confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+    strengths?: string[];
+    risks?: string[];
+    interview_focus?: string[];
     justification?: string;
   };
+  stage?: string;
+  recruiter_notes?: string;
+  follow_up_at?: string | null;
+  follow_up_status?: string;
+  interview_feedback?: { interviewer: string; recommendation: string; notes?: string; score?: number; created_at?: string }[];
+  offer?: { status?: string; amount?: string; joining_date?: string };
+  consent_status?: string;
+  preferred_contact_time?: string;
+  outreach_log?: { type: string; message: string; prepared_at: string }[];
   created_at: string;
+}
+
+interface Analytics {
+  total_candidates: number;
+  calls_completed: number;
+  evaluated: number;
+  shortlisted: number;
+  shortlist_rate: number;
+  call_completion_rate: number;
+  stage_counts: Record<string, number>;
+  average_stage_age_hours: number;
+  decline_reasons: Record<string, number>;
+  overdue_follow_ups: Candidate[];
 }
 
 interface HunarAgent {
@@ -105,6 +132,15 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const isMasked = (v: any) => !v || v === '' || (typeof v === 'string' && v.startsWith('['));
+
+const readableLabel = (value?: string) => (value || 'Not set').toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+
+const decisionCopy = (decision?: string, recommendation?: string) => {
+  const value = decision ?? (recommendation === 'SHORTLIST' ? 'ADVANCE' : 'HOLD');
+  if (value === 'ADVANCE') return { label: 'Recommended: move to interview', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  if (value === 'DECLINE') return { label: 'Not recommended to proceed', className: 'bg-red-50 text-red-700 border-red-200' };
+  return { label: 'Needs recruiter review', className: 'bg-amber-50 text-amber-700 border-amber-200' };
+};
 
 /** Normalize a LinkedIn URL so it always starts with https://www.linkedin.com */
 const normalizeLinkedIn = (url: string): string => {
@@ -192,6 +228,11 @@ export default function App() {
 
   // Dashboard
   const [activeCandidateDetail, setActiveCandidateDetail] = useState<Candidate | null>(null);
+  const [isSavingWorkflow, setIsSavingWorkflow] = useState(false);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [outreachMessage, setOutreachMessage] = useState('');
+  const [feedbackForm, setFeedbackForm] = useState({ interviewer: '', recommendation: 'HIRE', notes: '', score: '4' });
 
   // ─── Data fetchers ───────────────────────────────────────────────────────────
 
@@ -216,6 +257,88 @@ export default function App() {
       setCandidates(await res.json());
     } catch (e) { console.error(e); }
   }, []);
+
+  const updateCandidateWorkflow = async (candidateId: string, update: Record<string, any>) => {
+    setIsSavingWorkflow(true);
+    try {
+      const res = await fetch(`${API_BASE}/candidates/${candidateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(update),
+      });
+      if (!res.ok) throw new Error('Could not save candidate workflow');
+      const saved = await res.json();
+      setActiveCandidateDetail(saved);
+      await fetchCandidates(selectedJobId);
+    } catch (error) {
+      console.error(error);
+      alert('Could not save the candidate update. Please try again.');
+    } finally {
+      setIsSavingWorkflow(false);
+    }
+  };
+
+  const fetchAnalytics = useCallback(async (jobId: string) => {
+    if (!jobId) return;
+    try {
+      const res = await fetch(`${API_BASE}/jobs/${jobId}/analytics`);
+      if (res.ok) setAnalytics(await res.json());
+    } catch (error) { console.error(error); }
+  }, []);
+
+  const handleBulkStage = async (stage: string) => {
+    if (compareIds.length === 0) return alert('Select candidates from the ranked pipeline first.');
+    setIsSavingWorkflow(true);
+    try {
+      const res = await fetch(`${API_BASE}/candidates/bulk-update`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidate_ids: compareIds, stage }),
+      });
+      if (!res.ok) throw new Error('Bulk update failed');
+      setCompareIds([]);
+      await fetchCandidates(selectedJobId);
+      await fetchAnalytics(selectedJobId);
+    } catch (error) { console.error(error); alert('Could not update the selected candidates.'); }
+    finally { setIsSavingWorkflow(false); }
+  };
+
+  const prepareOutreach = async (type: string) => {
+    if (!activeCandidateDetail) return;
+    try {
+      const res = await fetch(`${API_BASE}/candidates/${activeCandidateDetail.id}/outreach`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Could not prepare message');
+      setOutreachMessage(data.message);
+      setActiveCandidateDetail(data.candidate);
+      fetchCandidates(selectedJobId);
+    } catch (error) { alert(error instanceof Error ? error.message : 'Could not prepare message'); }
+  };
+
+  const addInterviewFeedback = async () => {
+    if (!activeCandidateDetail || !feedbackForm.interviewer.trim()) return alert('Add the interviewer name first.');
+    try {
+      const res = await fetch(`${API_BASE}/candidates/${activeCandidateDetail.id}/feedback`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...feedbackForm, score: Number(feedbackForm.score) }),
+      });
+      if (!res.ok) throw new Error('Feedback could not be saved');
+      setActiveCandidateDetail(await res.json());
+      setFeedbackForm({ interviewer: '', recommendation: 'HIRE', notes: '', score: '4' });
+      fetchCandidates(selectedJobId);
+    } catch (error) { console.error(error); alert('Could not save interview feedback.'); }
+  };
+
+  const copyHandoff = async () => {
+    if (!activeCandidateDetail) return;
+    try {
+      const res = await fetch(`${API_BASE}/candidates/${activeCandidateDetail.id}/handoff`);
+      if (!res.ok) throw new Error('Could not prepare handoff');
+      await navigator.clipboard.writeText(JSON.stringify(await res.json(), null, 2));
+      alert('Hiring-manager handoff copied to the clipboard.');
+    } catch (error) { console.error(error); alert('Could not copy the handoff packet.'); }
+  };
 
   const fetchAgents = useCallback(async () => {
     setIsLoadingAgents(true);
@@ -242,6 +365,8 @@ export default function App() {
       setSearchExp(job.requirements.experience_years || 2);
     }
   }, [selectedJobId, jobs]);
+
+  useEffect(() => { fetchAnalytics(selectedJobId); }, [selectedJobId, candidates, fetchAnalytics]);
 
   // Poll candidates every 4s when on calls/dashboard tabs
   useEffect(() => {
@@ -1522,8 +1647,19 @@ export default function App() {
           {activeTab === 'dashboard' && (
             <div className="max-w-6xl mx-auto flex flex-col gap-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">Results Dashboard</h2>
-                <p className="text-sm text-slate-500 mt-1">AI-evaluated call results ranked against your JD criteria</p>
+                <h2 className="text-2xl font-bold text-slate-900">Review candidates and decide what happens next</h2>
+                <p className="text-sm text-slate-500 mt-1">Open a candidate, review the screening evidence, and complete their next hiring step.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4">
+                {[
+                  { step: '1', title: 'Choose a candidate', text: 'Open a profile from the ranked list to see their screening call and fit scores.' },
+                  { step: '2', title: 'Make a decision', text: 'Move them to interview, keep them on hold, or close their process.' },
+                  { step: '3', title: 'Complete the next task', text: 'Prepare a message, schedule a follow-up, collect feedback, or track an offer.' },
+                ].map(item => <div key={item.step} className="flex gap-3 rounded-xl bg-white/80 p-3">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">{item.step}</span>
+                  <div><p className="text-sm font-bold text-slate-800">{item.title}</p><p className="mt-0.5 text-xs leading-relaxed text-slate-500">{item.text}</p></div>
+                </div>)}
               </div>
 
               {/* Summary stats */}
@@ -1542,6 +1678,42 @@ export default function App() {
                 ))}
               </div>
 
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-800">Compare or update several candidates</h3>
+                      <p className="text-xs text-slate-500 mt-1">{compareIds.length ? `${compareIds.length} candidates selected. Compare their fit below or update them together.` : 'Tick up to three candidates in the list to compare them or update them together.'}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button disabled={isSavingWorkflow} onClick={() => handleBulkStage('INTERVIEW')} className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold disabled:opacity-50">Move to interview</button>
+                      <button disabled={isSavingWorkflow} onClick={() => handleBulkStage('ON_HOLD')} className="px-3 py-2 rounded-lg border border-amber-200 text-amber-700 text-xs font-bold disabled:opacity-50">Keep on hold</button>
+                      <button disabled={isSavingWorkflow} onClick={() => handleBulkStage('DECLINED')} className="px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-bold disabled:opacity-50">Close process</button>
+                    </div>
+                  </div>
+                  {compareIds.length >= 2 && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {candidates.filter(candidate => compareIds.includes(candidate.id)).slice(0, 3).map(candidate => (
+                        <div key={candidate.id} className="rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs">
+                          <p className="font-bold text-slate-800">{candidate.name}</p>
+                          <p className="text-slate-500 mt-1">{candidate.evaluation.overall_score ?? '—'}/100 · {candidate.stage ?? 'SCREENED'}</p>
+                          <p className="text-slate-500">Technical: {candidate.evaluation.technical_score ?? '—'} · Experience: {candidate.evaluation.experience_score ?? '—'} · Notice period: {candidate.answers?.notice_period ?? '—'} days</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex items-center gap-2 text-amber-800"><CalendarDays className="h-4 w-4" /><h3 className="font-bold text-sm">Tasks that need attention</h3></div>
+                  <p className="text-2xl font-extrabold text-amber-700 mt-2">{analytics?.overdue_follow_ups.length ?? 0}</p>
+                  <p className="text-xs text-amber-700">follow-ups are overdue</p>
+                  {analytics?.overdue_follow_ups.slice(0, 2).map(candidate => <button key={candidate.id} onClick={() => setActiveCandidateDetail(candidate)} className="block text-xs font-semibold text-amber-900 mt-2 hover:underline">{candidate.name}</button>)}
+                  <p className="text-[11px] text-amber-700 mt-2">Shortlist conversion: {analytics?.shortlist_rate ?? 0}%</p>
+                  <p className="text-[11px] text-amber-700 mt-1">Calls completed: {analytics?.call_completion_rate ?? 0}% · Average time in a step: {analytics?.average_stage_age_hours ?? 0}h</p>
+                  {analytics && Object.keys(analytics.decline_reasons).length > 0 && <p className="text-[11px] text-amber-700 mt-1 truncate" title={Object.keys(analytics.decline_reasons)[0]}>Most common reason not to proceed: {Object.keys(analytics.decline_reasons)[0]}</p>}
+                </div>
+              </div>
+
               {candidates.filter(c => c.evaluation?.overall_score !== undefined).length === 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400">
                   <BarChart3 className="h-10 w-10 mx-auto text-slate-300 mb-3" />
@@ -1555,13 +1727,17 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* Ranked list */}
                   <div className="lg:col-span-2 flex flex-col gap-3">
-                    <h3 className="font-semibold text-slate-800 text-sm">Ranked Pipeline</h3>
+                    <div>
+                      <h3 className="font-semibold text-slate-800 text-sm">1. Choose a candidate to review</h3>
+                      <p className="mt-1 text-xs text-slate-500">Higher fit scores appear first. Tick the checkbox only when you want to compare candidates or take the same action for several people.</p>
+                    </div>
                     <div className="flex flex-col gap-2">
                       {candidates
                         .filter(c => c.evaluation?.overall_score !== undefined)
                         .sort((a, b) => (b.evaluation.overall_score || 0) - (a.evaluation.overall_score || 0))
                         .map((cand, rank) => {
                           const isSelected = activeCandidateDetail?.id === cand.id;
+                          const decision = decisionCopy(cand.evaluation.decision, cand.evaluation.recommendation);
                           return (
                             <div
                               key={cand.id}
@@ -1571,6 +1747,11 @@ export default function App() {
                               }`}
                             >
                               <div className="flex items-start gap-3">
+                                <input type="checkbox" checked={compareIds.includes(cand.id)}
+                                  onClick={(event) => event.stopPropagation()}
+                                  onChange={(event) => setCompareIds(previous => event.target.checked ? [...previous, cand.id].slice(0, 3) : previous.filter(id => id !== cand.id))}
+                                  aria-label={`Select ${cand.name} for comparison`}
+                                  className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600" />
                                 <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0 ${
                                   rank === 0 ? 'bg-yellow-100 text-yellow-700' :
                                   rank === 1 ? 'bg-slate-100 text-slate-600' :
@@ -1585,12 +1766,8 @@ export default function App() {
                                 <div className="text-right flex-shrink-0">
                                   <span className="text-base font-extrabold text-indigo-600">{cand.evaluation.overall_score}</span>
                                   <span className="text-xs text-slate-400">/100</span>
-                                  <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded mt-1 ${
-                                    cand.evaluation.recommendation === 'SHORTLIST'
-                                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                                      : 'bg-red-50 text-red-600 border border-red-200'
-                                  }`}>
-                                    {cand.evaluation.recommendation}
+                                  <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded mt-1 border ${decision.className}`}>
+                                    {decision.label}
                                   </div>
                                 </div>
                               </div>
@@ -1613,19 +1790,15 @@ export default function App() {
                           <div className="text-right">
                             <div className="text-3xl font-extrabold text-indigo-600">{activeCandidateDetail.evaluation.overall_score}</div>
                             <div className="text-xs text-slate-400">/ 100</div>
-                            <span className={`text-xs font-bold px-3 py-1 rounded-xl border mt-1 inline-block ${
-                              activeCandidateDetail.evaluation.recommendation === 'SHORTLIST'
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                : 'bg-red-50 text-red-600 border-red-200'
-                            }`}>
-                              {activeCandidateDetail.evaluation.recommendation}
+                            <span className={`text-xs font-bold px-3 py-1 rounded-xl border mt-1 inline-block ${decisionCopy(activeCandidateDetail.evaluation.decision, activeCandidateDetail.evaluation.recommendation).className}`}>
+                              {decisionCopy(activeCandidateDetail.evaluation.decision, activeCandidateDetail.evaluation.recommendation).label}
                             </span>
                           </div>
                         </div>
 
                         {/* Score bars */}
                         <div className="flex flex-col gap-3">
-                          <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Score Breakdown</h5>
+                          <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">How the screening call matched this role</h5>
                           {[
                             { label: 'Technical', val: activeCandidateDetail.evaluation.technical_score, color: 'bg-indigo-500' },
                             { label: 'Communication', val: activeCandidateDetail.evaluation.communication_score, color: 'bg-purple-500' },
@@ -1644,10 +1817,109 @@ export default function App() {
                           ))}
                         </div>
 
+                        {/* Recruiter action hub */}
+                        <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 flex flex-col gap-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <h5 className="text-xs font-bold text-indigo-700 uppercase tracking-wider">2. Choose the candidate's next step</h5>
+                              <p className="text-xs text-slate-500 mt-1">Current step: {readableLabel(activeCandidateDetail.stage)}{activeCandidateDetail.evaluation.confidence ? ` · Screening confidence: ${activeCandidateDetail.evaluation.confidence.toLowerCase()}` : ''}</p>
+                            </div>
+                            <ClipboardList className="h-5 w-5 text-indigo-500" />
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { label: 'Move to interview', stage: 'INTERVIEW', style: 'bg-indigo-600 text-white hover:bg-indigo-700' },
+                              { label: 'Keep on hold', stage: 'ON_HOLD', style: 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50' },
+                              { label: 'Close process', stage: 'DECLINED', style: 'bg-white text-red-600 border border-red-200 hover:bg-red-50' },
+                            ].map(action => (
+                              <button key={action.stage} disabled={isSavingWorkflow}
+                                onClick={() => updateCandidateWorkflow(activeCandidateDetail.id, { stage: action.stage })}
+                                className={`rounded-lg px-2 py-2 text-xs font-bold transition-colors disabled:opacity-50 ${action.style}`}>
+                                {action.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label className="text-xs text-slate-600 flex flex-col gap-1.5">
+                              <span className="font-semibold"><CalendarDays className="h-3.5 w-3.5 inline mr-1" />Set a reminder to follow up</span>
+                              <input type="datetime-local" defaultValue={activeCandidateDetail.follow_up_at?.slice(0, 16) ?? ''}
+                                onBlur={(event) => updateCandidateWorkflow(activeCandidateDetail.id, {
+                                  follow_up_at: event.target.value,
+                                  follow_up_status: event.target.value ? 'SCHEDULED' : 'NOT_SCHEDULED',
+                                })}
+                                className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-slate-700 outline-none focus:border-indigo-400" />
+                            </label>
+                            <label className="text-xs text-slate-600 flex flex-col gap-1.5">
+                              <span className="font-semibold">Private recruiter notes</span>
+                              <textarea rows={2} defaultValue={activeCandidateDetail.recruiter_notes ?? ''}
+                                onBlur={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { recruiter_notes: event.target.value })}
+                                placeholder="Decision context, owner, or callback details"
+                                className="resize-none rounded-lg border border-slate-200 bg-white px-2 py-2 text-slate-700 outline-none focus:border-indigo-400" />
+                            </label>
+                          </div>
+                          {(activeCandidateDetail.evaluation.strengths?.length || activeCandidateDetail.evaluation.risks?.length || activeCandidateDetail.evaluation.interview_focus?.length) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                              {[
+                                { label: 'Why this candidate may be a fit', values: activeCandidateDetail.evaluation.strengths, color: 'text-emerald-700' },
+                                { label: 'What to confirm before proceeding', values: activeCandidateDetail.evaluation.risks, color: 'text-amber-700' },
+                                { label: 'Questions for the next interview', values: activeCandidateDetail.evaluation.interview_focus, color: 'text-indigo-700' },
+                              ].map(group => group.values?.length ? (
+                                <div key={group.label} className="rounded-lg bg-white/80 p-3 border border-white">
+                                  <p className={`font-bold mb-1.5 ${group.color}`}>{group.label}</p>
+                                  {group.values.map((value, index) => <p key={index} className="text-slate-600 leading-relaxed">{value}</p>)}
+                                </div>
+                              ) : null)}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
+                            <div className="flex items-center justify-between"><h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider"><Mail className="h-3.5 w-3.5 inline mr-1" />3. Prepare candidate communication</h5><button onClick={copyHandoff} className="text-xs font-bold text-indigo-600"><Copy className="h-3.5 w-3.5 inline mr-1" />Copy hiring-manager summary</button></div>
+                            <p className="text-xs text-slate-500">Choose a template, review the draft, then copy it into your email or WhatsApp tool. Nothing is sent automatically.</p>
+                            <div className="flex flex-wrap gap-2">
+                              {[['INTERVIEW_INVITE', 'Draft interview invite'], ['FOLLOW_UP', 'Draft follow-up'], ['ON_HOLD', 'Draft hold update'], ['DECLINE', 'Draft closure message']].map(([type, label]) => <button key={type} onClick={() => prepareOutreach(type)} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-indigo-300">{label}</button>)}
+                            </div>
+                            {outreachMessage && <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 leading-relaxed"><p>{outreachMessage}</p><button onClick={() => navigator.clipboard.writeText(outreachMessage)} className="mt-2 font-bold text-indigo-600">Copy message</button></div>}
+                            <div className="grid grid-cols-2 gap-2">
+                              <select aria-label="Candidate contact permission" value={activeCandidateDetail.consent_status ?? 'CONTACT_ALLOWED'} onChange={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { consent_status: event.target.value })} className="rounded-lg border border-slate-200 px-2 py-2 text-xs text-slate-600">
+                                <option value="CONTACT_ALLOWED">Okay to contact</option><option value="DO_NOT_CONTACT">Do not contact</option>
+                              </select>
+                              <input defaultValue={activeCandidateDetail.preferred_contact_time ?? ''} onBlur={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { preferred_contact_time: event.target.value })} placeholder="Preferred hours" className="rounded-lg border border-slate-200 px-2 py-2 text-xs" />
+                            </div>
+                          </div>
+
+                          <div className="rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
+                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider"><ShieldCheck className="h-3.5 w-3.5 inline mr-1" />4. Track the offer</h5>
+                            <p className="text-xs text-slate-500">Use this only after deciding to make an offer. Record its status, value, and expected joining date.</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <select value={activeCandidateDetail.offer?.status ?? 'NOT_STARTED'} onChange={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { offer: { ...(activeCandidateDetail.offer ?? {}), status: event.target.value } })} className="rounded-lg border border-slate-200 px-2 py-2 text-xs text-slate-600">
+                                {['NOT_STARTED', 'DRAFTING', 'SENT', 'NEGOTIATING', 'ACCEPTED', 'DECLINED'].map(status => <option key={status}>{status}</option>)}
+                              </select>
+                              <input defaultValue={activeCandidateDetail.offer?.amount ?? ''} onBlur={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { offer: { ...(activeCandidateDetail.offer ?? {}), amount: event.target.value } })} placeholder="Offer amount" className="rounded-lg border border-slate-200 px-2 py-2 text-xs" />
+                            </div>
+                            <input type="date" defaultValue={activeCandidateDetail.offer?.joining_date ?? ''} onBlur={(event) => updateCandidateWorkflow(activeCandidateDetail.id, { offer: { ...(activeCandidateDetail.offer ?? {}), joining_date: event.target.value } })} className="rounded-lg border border-slate-200 px-2 py-2 text-xs" />
+                            <p className="text-xs text-slate-400">This is an internal tracker. It does not send an offer to the candidate.</p>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
+                          <div className="flex items-center justify-between"><h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider"><ClipboardCheck className="h-3.5 w-3.5 inline mr-1" />After the interview: collect feedback</h5><span className="text-xs text-slate-400">{activeCandidateDetail.interview_feedback?.length ?? 0} submitted</span></div>
+                          <p className="text-xs text-slate-500">Each interviewer can record a recommendation, a 1-5 score, and evidence for their decision.</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                            <input value={feedbackForm.interviewer} onChange={(event) => setFeedbackForm(previous => ({ ...previous, interviewer: event.target.value }))} placeholder="Interviewer name" className="rounded-lg border border-slate-200 px-2 py-2 text-xs" />
+                            <select value={feedbackForm.recommendation} onChange={(event) => setFeedbackForm(previous => ({ ...previous, recommendation: event.target.value }))} className="rounded-lg border border-slate-200 px-2 py-2 text-xs"><option>STRONG_HIRE</option><option>HIRE</option><option>NO_HIRE</option></select>
+                            <select value={feedbackForm.score} onChange={(event) => setFeedbackForm(previous => ({ ...previous, score: event.target.value }))} className="rounded-lg border border-slate-200 px-2 py-2 text-xs">{[5, 4, 3, 2, 1].map(score => <option key={score} value={score}>{score}/5</option>)}</select>
+                            <button onClick={addInterviewFeedback} className="rounded-lg bg-slate-800 px-2 py-2 text-xs font-bold text-white">Save interview feedback</button>
+                          </div>
+                          <textarea value={feedbackForm.notes} onChange={(event) => setFeedbackForm(previous => ({ ...previous, notes: event.target.value }))} rows={2} placeholder="Evidence, concerns, and recommended next step" className="resize-none rounded-lg border border-slate-200 px-2 py-2 text-xs" />
+                          {activeCandidateDetail.interview_feedback?.slice(-2).reverse().map((feedback, index) => <div key={`${feedback.created_at}-${index}`} className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><span className="font-bold text-slate-800">{feedback.interviewer}</span> · {feedback.recommendation} · {feedback.score ?? '—'}/5 {feedback.notes ? `— ${feedback.notes}` : ''}</div>)}
+                        </div>
+
                         {/* Call answers */}
                         {Object.keys(activeCandidateDetail.answers).length > 0 && (
                           <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
-                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Screening Answers</h5>
+                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">What the candidate said in the screening call</h5>
                             <div className="grid grid-cols-2 gap-3 text-xs">
                               {Object.entries(activeCandidateDetail.answers).map(([key, val]) => (
                                 <div key={key}>
@@ -1662,7 +1934,7 @@ export default function App() {
                         {/* Justification */}
                         {activeCandidateDetail.evaluation.justification && (
                           <div className="flex flex-col gap-2">
-                            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Evaluation</h5>
+                            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Why the system made this recommendation</h5>
                             <p className="text-sm text-slate-700 bg-white border border-slate-200 rounded-xl p-4 leading-relaxed">
                               {activeCandidateDetail.evaluation.justification}
                             </p>

@@ -25,6 +25,29 @@ class CandidateCreate(BaseModel):
 
 class CandidateUpdate(BaseModel):
     phone: Optional[str] = None
+    # Post-screening hiring workflow fields.  These stay optional so existing
+    # candidate records remain compatible.
+    stage: Optional[str] = None
+    recruiter_notes: Optional[str] = None
+    follow_up_at: Optional[str] = None
+    follow_up_status: Optional[str] = None
+    interview_feedback: Optional[List[Dict[str, Any]]] = None
+    offer: Optional[Dict[str, Any]] = None
+    consent_status: Optional[str] = None
+    preferred_contact_time: Optional[str] = None
+    outreach_log: Optional[List[Dict[str, Any]]] = None
+
+class CandidateFeedbackCreate(BaseModel):
+    interviewer: str
+    recommendation: str
+    notes: str = ""
+    score: Optional[int] = None
+
+class BulkCandidateUpdate(BaseModel):
+    candidate_ids: List[str]
+    stage: Optional[str] = None
+    follow_up_at: Optional[str] = None
+    follow_up_status: Optional[str] = None
 
 class CallTrigger(BaseModel):
     candidate_id: str
@@ -55,6 +78,14 @@ class AgentCreate(BaseModel):
         "years_of_experience": "",
         "summary": ""
     }
+    # Call controls and safety guardrails exposed by the v1 agent UI.
+    max_call_duration_seconds: Optional[int] = None
+    max_retries: Optional[int] = None
+    retry_delay_seconds: Optional[int] = None
+    timezone: Optional[str] = None
+    calling_hours_start: Optional[str] = None
+    calling_hours_end: Optional[str] = None
+    do_not_call_topics: Optional[List[str]] = None
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
