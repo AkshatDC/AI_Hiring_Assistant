@@ -16,6 +16,7 @@ The app is split into a FastAPI backend and a Vite + React frontend.
 - Triggers single or bulk outbound calls.
 - Receives webhook updates from Hunar and stores call status, recordings, answers, and AI evaluation results.
 - Shows the full pipeline and scoring in a dashboard.
+- Prompts each browser session to enter its own API keys and keeps jobs, candidates, and call data scoped to that session.
 
 ## Important limitation
 
@@ -36,11 +37,7 @@ Due to the current subscription limits, phone number and email enrichment may no
 - Python 3.10+ recommended
 - Node.js 18+ recommended
 - A browser
-- API keys if you want live integrations:
-  - `HUNAR_API_KEY`
-  - `GEMINI_API_KEY`
-  - `APOLLO_API_KEY`
-  - `CORESIGNAL_API_KEY`
+- A backend `.env` file is still useful for shared defaults like `PUBLIC_WEBHOOK_URL`
 
 ## Run the app
 
@@ -92,6 +89,19 @@ npm run dev
 
 The frontend expects the backend at `http://localhost:8000/api`.
 
+### 4. Set up API keys in the app
+
+When you open the app, it will generate a browser session and show an API key setup screen.
+
+Enter your own:
+
+- `HUNAR_API_KEY`
+- `APOLLO_API_KEY`
+- `CORESIGNAL_API_KEY`
+- `GEMINI_API_KEY`
+
+Those keys are stored server-side for that session only. You do not need to keep editing `.env` for each browser user.
+
 ## User Flow
 
 1. Create a job from a job description.
@@ -115,8 +125,9 @@ The backend exposes endpoints for:
 - single and bulk call triggering
 - Hunar webhook processing
 - candidate enrichment
+- session creation and session-scoped credential storage
 
-It stores data in `backend/app/db.json`.
+It stores data in `backend/app/db.json` with separate `sessions`, `jobs`, and `candidates` records so one browser session does not see another session's data.
 
 ## Frontend at a glance
 
@@ -131,6 +142,7 @@ It is designed to support the full lifecycle from JD to outreach to evaluation w
 
 ## Notes
 
+- If a browser session has not saved API keys yet, the UI will prompt for them before the main workflow loads.
 - If an API key is missing, the backend falls back to mock or heuristic behavior where possible.
 - The app supports live integrations, but it is still usable in a limited demo mode.
 
@@ -153,8 +165,11 @@ Then deploy the generated frontend bundle to your static host of choice.
 
 The backend needs the following environment variables in production as needed:
 
+- `PUBLIC_WEBHOOK_URL`
+
+Shared environment variables are optional if each browser session supplies its own keys through the app. If you want default fallback credentials for all sessions, you can still define:
+
 - `HUNAR_API_KEY`
 - `GEMINI_API_KEY`
 - `APOLLO_API_KEY`
 - `CORESIGNAL_API_KEY`
-- `PUBLIC_WEBHOOK_URL`

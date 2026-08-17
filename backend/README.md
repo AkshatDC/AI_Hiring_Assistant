@@ -13,6 +13,7 @@ The backend is responsible for:
 - triggering outbound screening calls
 - receiving Hunar webhook callbacks
 - evaluating candidate responses against the job requirements
+- storing browser sessions, per-session API credentials, and session-scoped job/candidate data
 
 ## Tech Stack
 
@@ -30,8 +31,9 @@ The backend is responsible for:
 - `app/apollo.py` - Apollo.io search and enrichment, CoreSignal fallback, mock data fallback
 - `app/hunar.py` - Hunar voice agent and call API integration
 - `app/db.py` - lightweight JSON storage helpers
+- `app/runtime.py` - request-scoped session and credential helpers
 - `app/schemas.py` - request and response models
-- `app/db.json` - local data store for jobs and candidates
+- `app/db.json` - local data store for sessions, jobs, and candidates
 
 ## Environment Variables
 
@@ -44,6 +46,8 @@ Create a `.env` file in `backend/` with the values you want to use.
 - `PUBLIC_WEBHOOK_URL`
 - `PORT` - optional, default is `8000`
 - `HOST` - optional, default is `0.0.0.0`
+
+The app now captures API keys in the frontend and stores them per browser session on the backend. The `.env` file can still provide optional shared fallback credentials for all sessions.
 
 ## How it works
 
@@ -94,6 +98,16 @@ The webhook endpoint updates the candidate record with:
 - recording URL
 - answers from the conversation
 - AI evaluation results
+
+Webhook signature validation checks the stored Hunar key for the relevant session, with `.env` fallback support.
+
+### 6. Session flow
+
+1. The frontend creates or reuses a browser session.
+2. The user saves their API keys in the app UI.
+3. The backend stores those keys against that session in `db.json`.
+4. Every request carries `X-Session-ID`.
+5. Jobs, candidates, and webhook lookups remain scoped to that session.
 
 ## API Endpoints
 
@@ -159,6 +173,7 @@ On Windows, you can also use the helper script:
 
 The backend uses a simple JSON file at `app/db.json` for local storage.
 
+- Sessions are stored under `sessions`
 - Jobs are stored under `jobs`
 - Candidates are stored under `candidates`
 
@@ -167,5 +182,6 @@ This makes the project easy to run locally without setting up a database.
 ## Development notes
 
 - CORS is currently open to all origins for local development.
+- Requests must include `X-Session-ID` once the browser session flow is active.
 - If API keys are missing, the backend keeps the app usable by falling back to mock or heuristic logic where possible.
 - The code is designed for a demo and prototype workflow, not for production-grade persistence.

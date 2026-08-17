@@ -112,10 +112,12 @@ interface HunarAgent {
 }
 
 interface Config {
+  session_id?: string;
   hunar_configured: boolean;
   gemini_configured: boolean;
   apollo_configured: boolean;
   coresignal_configured: boolean;
+  credentials_configured?: boolean;
   public_webhook_url: string;
 }
 
@@ -156,12 +158,23 @@ const normalizeLinkedIn = (url: string): string => {
   return 'https://' + url;
 };
 
+const SESSION_STORAGE_KEY = 'ai_hiring_assistant_session_id';
+
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
   // Global state
   const [activeTab, setActiveTab] = useState<'jd' | 'source' | 'calls' | 'dashboard'>('jd');
   const [config, setConfig] = useState<Config | null>(null);
+  const [sessionId, setSessionId] = useState<string>(localStorage.getItem(SESSION_STORAGE_KEY) || '');
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isSavingCredentials, setIsSavingCredentials] = useState(false);
+  const [credentialsForm, setCredentialsForm] = useState({
+    hunar_api_key: '',
+    apollo_api_key: '',
+    coresignal_api_key: '',
+    gemini_api_key: '',
+  });
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>('');
 
@@ -236,11 +249,37 @@ export default function App() {
 
   // ─── Data fetchers ───────────────────────────────────────────────────────────
 
+  const refreshSessionConfig = useCallback(async () => {
+    const res = await fetch(`${API_BASE}/config`);
+    const data = await res.json();
+    setConfig(data);
+    return data as Config;
+  }, []);
+
   const fetchConfig = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/config`);
-      setConfig(await res.json());
+      await refreshSessionConfig();
     } catch (e) { console.error(e); }
+  }, [refreshSessionConfig]);
+
+  const bootstrapSession = useCallback(async () => {
+    try {
+      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+      const res = await fetch(`${API_BASE}/session`, {
+        headers: storedSessionId ? { 'X-Session-ID': storedSessionId } : undefined,
+      });
+      const data = await res.json();
+      const nextSessionId = data.session_id || storedSessionId || '';
+      if (nextSessionId) {
+        localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
+        setSessionId(nextSessionId);
+      }
+      setConfig(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsBootstrapping(false);
+    }
   }, []);
 
   const fetchJobs = useCallback(async () => {
@@ -340,6 +379,31 @@ export default function App() {
     } catch (error) { console.error(error); alert('Could not copy the handoff packet.'); }
   };
 
+  const handleSaveCredentials = async () => {
+    setIsSavingCredentials(true);
+    try {
+      const res = await fetch(`${API_BASE}/session/credentials`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentialsForm),
+      });
+      if (!res.ok) throw new Error('Could not save credentials');
+      const data = await res.json();
+      setConfig(prev => ({
+        ...(prev || {}),
+        ...data,
+        public_webhook_url: prev?.public_webhook_url || config?.public_webhook_url || '',
+      }));
+      await fetchConfig();
+      alert('Credentials saved for this session.');
+    } catch (error) {
+      console.error(error);
+      alert('Could not save credentials.');
+    } finally {
+      setIsSavingCredentials(false);
+    }
+  };
+
   const fetchAgents = useCallback(async () => {
     setIsLoadingAgents(true);
     try {
@@ -352,7 +416,33 @@ export default function App() {
 
   // ─── Effects ─────────────────────────────────────────────────────────────────
 
-  useEffect(() => { fetchConfig(); fetchJobs(); }, []);
+  useEffect(() => {
+    void bootstrapSession();
+  }, [bootstrapSession]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = ((input: RequestInfo | URL, init: RequestInit = {}) => {
+      const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      if (requestUrl.startsWith(API_BASE)) {
+        const headers = new Headers(init.headers || (typeof input !== 'string' && !(input instanceof URL) ? input.headers : undefined));
+        headers.set('X-Session-ID', sessionId);
+        return originalFetch(input as any, { ...init, headers });
+      }
+      return originalFetch(input as any, init);
+    }) as typeof window.fetch;
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    void fetchConfig();
+    void fetchJobs();
+    void fetchAgents();
+  }, [sessionId, fetchConfig, fetchJobs, fetchAgents]);
 
   useEffect(() => {
     if (!selectedJobId) return;
@@ -703,6 +793,89 @@ export default function App() {
   );
 
   // ─── Render ──────────────────────────────────────────────────────────────────
+
+  const needsCredentialSetup = !isBootstrapping && !config?.credentials_configured;
+
+  if (isBootstrapping) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-slate-950 text-white px-6">
+        <div className="max-w-md w-full rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-200">
+              <Shield className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black">Starting session</h1>
+              <p className="text-sm text-slate-300">Preparing your private workspace</p>
+            </div>
+          </div>
+          <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-400 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsCredentialSetup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white px-6 py-10">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-3 rounded-2xl bg-white/10 text-cyan-300">
+              <Shield className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight">API Key Setup</h1>
+              <p className="text-slate-300 mt-1">Enter your own credentials once. This browser session will keep them private on the backend.</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-6">
+            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow-2xl">
+              <div className="grid gap-4">
+                {[
+                  { key: 'hunar_api_key', label: 'Hunar API Key' },
+                  { key: 'apollo_api_key', label: 'Apollo API Key' },
+                  { key: 'coresignal_api_key', label: 'CoreSignal API Key' },
+                  { key: 'gemini_api_key', label: 'Gemini API Key' },
+                ].map(field => (
+                  <label key={field.key} className="flex flex-col gap-2 text-sm text-slate-200">
+                    <span className="font-semibold">{field.label}</span>
+                    <input
+                      type="password"
+                      value={credentialsForm[field.key as keyof typeof credentialsForm]}
+                      onChange={event => setCredentialsForm(previous => ({ ...previous, [field.key]: event.target.value }))}
+                      className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+                      placeholder="Paste your key here"
+                    />
+                  </label>
+                ))}
+                <button
+                  onClick={handleSaveCredentials}
+                  disabled={isSavingCredentials}
+                  className="mt-2 rounded-2xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-50"
+                >
+                  {isSavingCredentials ? 'Saving...' : 'Save & Continue'}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur p-6">
+              <h2 className="text-lg font-bold mb-4">What happens next</h2>
+              <div className="space-y-3 text-sm text-slate-300">
+                <p>1. Your keys are tied to this browser session only.</p>
+                <p>2. Jobs, candidates, calls, and evaluations stay isolated per session.</p>
+                <p>3. The frontend automatically sends your session ID with every request.</p>
+                <p>4. Hunar webhooks resolve back to the right candidate through that session-linked record.</p>
+              </div>
+              {sessionId && <p className="mt-5 text-xs text-slate-400 break-all">Session ID: {sessionId}</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 flex flex-col font-sans">

@@ -14,6 +14,7 @@ The frontend provides a single-screen workflow for:
 - creating and selecting voice agents
 - triggering calls
 - reviewing results in the dashboard
+- setting up per-browser API keys before the workflow starts
 
 ## Tech Stack
 
@@ -66,6 +67,14 @@ The app is organized into four tabs:
 - Inspect answers gathered during the call.
 - Open recordings when available.
 
+### API Key Setup
+
+When the app first loads, it creates a browser session and shows a secure setup screen.
+
+- Enter your own `HUNAR_API_KEY`, `APOLLO_API_KEY`, `CORESIGNAL_API_KEY`, and `GEMINI_API_KEY`.
+- The frontend stores the session ID in `localStorage`.
+- Every API request includes `X-Session-ID`, so the backend can keep data scoped to that browser session.
+
 ## API connection
 
 The frontend talks to the backend at:
@@ -84,6 +93,8 @@ npm run build
 ```
 
 If the frontend and backend are deployed on the same domain, you can point the variable at a relative path such as `/api`.
+
+The frontend automatically adds the current session ID to backend requests once the session is created.
 
 ## Run the frontend
 
@@ -108,6 +119,7 @@ npm run lint
 - The UI polls candidate status while you are on the Calls or Dashboard tab.
 - If the backend returns mock or partial data, the UI still renders the pipeline so you can keep testing the flow.
 - Contact fields may need manual correction because of current enrichment subscription limits.
+- Before the main app loads, the UI prompts for API keys if the current session has not saved them yet.
 
 ## User experience flow
 

@@ -3,13 +3,14 @@ import json
 import re
 import google.generativeai as genai
 from typing import Dict, Any, Optional
+from app.runtime import get_credential
 
 # NOTE: Do NOT read GEMINI_API_KEY at module level — load_dotenv() in main.py
 # must run first. Read it lazily inside each function instead.
 
 def _get_gemini_key() -> str:
     """Lazily fetch and configure Gemini so load_dotenv() has already run."""
-    key = os.getenv("GEMINI_API_KEY", "")
+    key = get_credential("GEMINI_API_KEY", "")
     if key:
         genai.configure(api_key=key)
     return key

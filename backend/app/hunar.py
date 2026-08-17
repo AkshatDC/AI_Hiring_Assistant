@@ -6,6 +6,7 @@ import base64
 import requests
 import time
 from typing import Optional, List, Dict, Any
+from app.runtime import get_credential
 
 BASE_URL = "https://api.voice.hunar.ai/external/v1"
 
@@ -47,7 +48,7 @@ def normalize_phone(phone: str) -> str:
 
 def _get_hunar_key() -> str:
     """Lazily fetch Hunar API key so load_dotenv() in main.py has already run."""
-    return os.getenv("HUNAR_API_KEY", "")
+    return get_credential("HUNAR_API_KEY", "")
 
 
 def verify_hunar_webhook_signature(

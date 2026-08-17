@@ -2,6 +2,7 @@ import os
 import requests
 import random
 from typing import List, Dict, Any, Optional
+from app.runtime import get_credential
 
 # NOTE: Do NOT read API keys at module level — read lazily inside each function
 # so that load_dotenv() in main.py has already run.
@@ -29,11 +30,11 @@ MOCK_SKILLS_POOL = {
 
 
 def _get_apollo_key() -> str:
-    return os.getenv("APOLLO_API_KEY", "")
+    return get_credential("APOLLO_API_KEY", "")
 
 
 def _get_coresignal_key() -> str:
-    return os.getenv("CORESIGNAL_API_KEY", "")
+    return get_credential("CORESIGNAL_API_KEY", "")
 
 
 def generate_mock_candidates(

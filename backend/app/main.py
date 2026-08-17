@@ -3,6 +3,7 @@ import uuid
 import time
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, Header
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ load_dotenv(dotenv_path=env_path, override=True)
 
 from app.schemas import JobCreate, SourcingSearchQuery, CandidateCreate, CandidateUpdate, CandidateFeedbackCreate, BulkCandidateUpdate, CallTrigger, BulkCallTrigger, AgentCreate, AgentUpdate
 from app import db, ai, apollo, hunar
+from app.runtime import set_current_session, get_current_session_id, get_credential
 
 app = FastAPI(title="AI Hiring Platform & Reachout Assistant")
 
@@ -29,18 +31,93 @@ app.add_middleware(
 PUBLIC_WEBHOOK_URL = os.getenv("PUBLIC_WEBHOOK_URL", "http://localhost:8000")
 
 
+@app.middleware("http")
+async def session_middleware(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/api/session") or path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi.json"):
+        return await call_next(request)
+
+    session_id = request.headers.get("x-session-id")
+    if not session_id:
+        return JSONResponse(status_code=401, content={"detail": "Missing X-Session-ID header"})
+
+    session = db.ensure_session(session_id)
+    set_current_session(session_id, session.get("credentials", {}))
+    response = await call_next(request)
+    response.headers["X-Session-ID"] = session_id
+    return response
+
+
 # ─────────────────────────────────────────────────────────────
 # SYSTEM CONFIG
 # ─────────────────────────────────────────────────────────────
 
 @app.get("/api/config")
 def get_config():
+    session_id = get_current_session_id()
+    credentials = db.get_session_credentials(session_id) if session_id else {}
     return {
-        "hunar_configured": bool(os.getenv("HUNAR_API_KEY", "")),
-        "gemini_configured": bool(os.getenv("GEMINI_API_KEY", "")),
-        "apollo_configured": bool(os.getenv("APOLLO_API_KEY", "")),
-        "coresignal_configured": bool(os.getenv("CORESIGNAL_API_KEY", "")),
+        "session_id": session_id,
+        "hunar_configured": bool(credentials.get("HUNAR_API_KEY") or os.getenv("HUNAR_API_KEY", "")),
+        "gemini_configured": bool(credentials.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY", "")),
+        "apollo_configured": bool(credentials.get("APOLLO_API_KEY") or os.getenv("APOLLO_API_KEY", "")),
+        "coresignal_configured": bool(credentials.get("CORESIGNAL_API_KEY") or os.getenv("CORESIGNAL_API_KEY", "")),
+        "credentials_configured": all([
+            bool(credentials.get("HUNAR_API_KEY") or os.getenv("HUNAR_API_KEY", "")),
+            bool(credentials.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY", "")),
+            bool(credentials.get("APOLLO_API_KEY") or os.getenv("APOLLO_API_KEY", "")),
+            bool(credentials.get("CORESIGNAL_API_KEY") or os.getenv("CORESIGNAL_API_KEY", "")),
+        ]),
         "public_webhook_url": PUBLIC_WEBHOOK_URL
+    }
+
+
+@app.get("/api/session")
+def get_or_create_session(session_id: Optional[str] = Header(None, alias="X-Session-ID")):
+    if not session_id:
+        session_id = str(uuid.uuid4())
+    session = db.ensure_session(session_id)
+    set_current_session(session_id, session.get("credentials", {}))
+    credentials = session.get("credentials", {}) if isinstance(session.get("credentials", {}), dict) else {}
+    return {
+        "session_id": session_id,
+        "hunar_configured": bool(credentials.get("HUNAR_API_KEY") or os.getenv("HUNAR_API_KEY", "")),
+        "gemini_configured": bool(credentials.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY", "")),
+        "apollo_configured": bool(credentials.get("APOLLO_API_KEY") or os.getenv("APOLLO_API_KEY", "")),
+        "coresignal_configured": bool(credentials.get("CORESIGNAL_API_KEY") or os.getenv("CORESIGNAL_API_KEY", "")),
+        "credentials_configured": all([
+            bool(credentials.get("HUNAR_API_KEY") or os.getenv("HUNAR_API_KEY", "")),
+            bool(credentials.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY", "")),
+            bool(credentials.get("APOLLO_API_KEY") or os.getenv("APOLLO_API_KEY", "")),
+            bool(credentials.get("CORESIGNAL_API_KEY") or os.getenv("CORESIGNAL_API_KEY", "")),
+        ]),
+        "public_webhook_url": PUBLIC_WEBHOOK_URL
+    }
+
+
+@app.put("/api/session/credentials")
+def save_session_credentials(payload: dict, session_id: Optional[str] = Header(None, alias="X-Session-ID")):
+    if not session_id:
+        session_id = str(uuid.uuid4())
+    session = db.update_session_credentials(session_id, {
+        "HUNAR_API_KEY": payload.get("hunar_api_key", ""),
+        "APOLLO_API_KEY": payload.get("apollo_api_key", ""),
+        "CORESIGNAL_API_KEY": payload.get("coresignal_api_key", ""),
+        "GEMINI_API_KEY": payload.get("gemini_api_key", ""),
+    })
+    set_current_session(session_id, session.get("credentials", {}))
+    return {
+        "session_id": session_id,
+        "hunar_configured": bool(session["credentials"].get("HUNAR_API_KEY")),
+        "gemini_configured": bool(session["credentials"].get("GEMINI_API_KEY")),
+        "apollo_configured": bool(session["credentials"].get("APOLLO_API_KEY")),
+        "coresignal_configured": bool(session["credentials"].get("CORESIGNAL_API_KEY")),
+        "credentials_configured": all([
+            bool(session["credentials"].get("HUNAR_API_KEY")),
+            bool(session["credentials"].get("GEMINI_API_KEY")),
+            bool(session["credentials"].get("APOLLO_API_KEY")),
+            bool(session["credentials"].get("CORESIGNAL_API_KEY")),
+        ]),
     }
 
 
@@ -109,8 +186,8 @@ def get_job(job_id: str):
 def apollo_debug_test():
     """Debug endpoint: tests Apollo + CoreSignal connectivity, returns raw diagnostics."""
     import requests as _req
-    APOLLO_KEY = os.getenv("APOLLO_API_KEY", "")
-    CS_KEY = os.getenv("CORESIGNAL_API_KEY", "")
+    APOLLO_KEY = get_credential("APOLLO_API_KEY", "")
+    CS_KEY = get_credential("CORESIGNAL_API_KEY", "")
 
     results = {}
 
@@ -695,13 +772,18 @@ async def hunar_webhook(
 ):
     raw_body = await request.body()
     
-    HUNAR_API_KEY = os.getenv("HUNAR_API_KEY", "")
-    if HUNAR_API_KEY:
+    trusted_keys = [session.get("credentials", {}).get("HUNAR_API_KEY") for session in db.list_sessions()]
+    trusted_keys = [key for key in trusted_keys if key]
+    env_key = os.getenv("HUNAR_API_KEY", "")
+    if env_key:
+        trusted_keys.append(env_key)
+
+    if trusted_keys:
         valid = hunar.verify_hunar_webhook_signature(
             signature_header=x_hunar_signature,
             timestamp_header=x_hunar_timestamp,
             request_body=raw_body,
-            trusted_api_keys=[HUNAR_API_KEY]
+            trusted_api_keys=trusted_keys
         )
         if not valid:
             print("Warning: Webhook signature validation failed — proceeding anyway for dev.")
